@@ -72,15 +72,29 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.logoContainer}>
-        <Icon name="laptop-code" size={50} color="#0000FF" solid />
+        {/* Icône en noir */}
+        <Icon
+          name="laptop-code"
+          size={50}
+          color="#000000"
+          solid
+        />
+        {/* Titre en noir */}
         <Text style={styles.title}>Freelancy</Text>
         <Text style={styles.subtitle}>Sometimes, you gotta move forward</Text>
       </View>
 
+      {/* Champs de saisie */}
       <View style={styles.card}>
         <View style={styles.inputWrapper}>
-          <Icon name="envelope" size={18} color="#888" style={styles.inputIcon} />
+          <Icon
+            name="envelope"
+            size={18}
+            color="#888"
+            style={styles.inputIcon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -93,7 +107,12 @@ export default function LoginScreen({ navigation }) {
         </View>
 
         <View style={styles.inputWrapper}>
-          <Icon name="lock" size={18} color="#888" style={styles.inputIcon} />
+          <Icon
+            name="lock"
+            size={18}
+            color="#888"
+            style={styles.inputIcon}
+          />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -104,6 +123,7 @@ export default function LoginScreen({ navigation }) {
           />
         </View>
 
+        {/* Bouton animé en noir */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             style={styles.loginButton}
@@ -119,6 +139,14 @@ export default function LoginScreen({ navigation }) {
             )}
           </TouchableOpacity>
         </Animated.View>
+
+        {/* Liens en noir */}
+        <TouchableOpacity
+          style={styles.link}
+          onPress={() => navigation.navigate("ForgotPasswordScreen")}
+        >
+          <Text style={styles.linkText}>Forgot Password?</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.link}
@@ -147,7 +175,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: "#0000FF",
+    color: "#000000",     // titre en noir
     fontWeight: "bold",
     marginTop: 10,
   },
@@ -189,12 +217,12 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   loginButton: {
-    backgroundColor: "#0000FF",
+    backgroundColor: "#000000",  // bouton en noir
     paddingVertical: 16,
     borderRadius: 15,
     alignItems: "center",
     marginTop: 20,
-    shadowColor: "#0000FF",
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -209,7 +237,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   linkText: {
-    color: "#0000FF",
+    color: "#000000",      // liens en noir
     textDecorationLine: "underline",
     fontSize: 14,
   },
