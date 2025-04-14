@@ -37,7 +37,7 @@ export default function LoginScreen({ navigation }) {
     }
     setLoading(true);
     try {
-      const response = await api.post("/users/login", { email, password });
+      const response = await api.post("/login", { email, password });
       const { token, user } = response.data;
       login({ token, user });
       showToast("success", "Login successful!");

@@ -16,10 +16,12 @@ import api from "./api";
 import Icon from "react-native-vector-icons/FontAwesome";
 
 export default function RegisterScreen({ navigation }) {
-  const [fullName, setFullName] = useState("");
+  const [name, setName] = useState(""); // Modification ici
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(""); // Default to an empty string
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
   const scaleAnim = new Animated.Value(1);
 
@@ -28,18 +30,26 @@ export default function RegisterScreen({ navigation }) {
   };
 
   const handleRegister = async () => {
-    if (!fullName || !email || !password || !role) {
+    if (!name || !lastName || !email || !password || !confirmPassword || !role) { // Utilisation de name
       showToast("error", "Please fill in all fields");
       return;
     }
+  
+    if (password !== confirmPassword) {
+      showToast("error", "Passwords do not match");
+      return;
+    }
+  
     setLoading(true);
     try {
-      const response = await api.post("/users/signup", {
-        fullName,
+      const response = await api.post("/register", {
+        name, // Modification ici
+        lastName,
         email,
         password,
         role,
       });
+  
       showToast("success", "Registration successful! You can now log in.");
       setTimeout(() => navigation.navigate("LoginScreen"), 1500);
     } catch (error) {
@@ -53,7 +63,6 @@ export default function RegisterScreen({ navigation }) {
     }
   };
 
-  // Button Animation on Press
   const handlePressIn = () => {
     Animated.timing(scaleAnim, {
       toValue: 0.95,
@@ -87,20 +96,26 @@ export default function RegisterScreen({ navigation }) {
           <Icon name="user" size={18} color="#888" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
-            placeholder="Full Name"
+            placeholder="Name" // Modification ici
             placeholderTextColor="#AAA"
-            value={fullName}
-            onChangeText={setFullName}
+            value={name} // Modification ici
+            onChangeText={setName} // Modification ici
           />
         </View>
 
         <View style={styles.inputWrapper}>
-          <Icon
-            name="envelope"
-            size={18}
-            color="#888"
-            style={styles.inputIcon}
+          <Icon name="user" size={18} color="#888" style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Last Name"
+            placeholderTextColor="#AAA"
+            value={lastName}
+            onChangeText={setLastName}
           />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <Icon name="envelope" size={18} color="#888" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -124,21 +139,33 @@ export default function RegisterScreen({ navigation }) {
           />
         </View>
 
+        <View style={styles.inputWrapper}>
+          <Icon name="lock" size={18} color="#888" style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Confirm Password"
+            placeholderTextColor="#AAA"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+          />
+        </View>
+
         {/* Role Selection */}
         <View style={styles.inputWrapper}>
           <Picker
             selectedValue={role}
-            style={[styles.input, { paddingVertical: 0 }]} // Même style que les autres champs
+            style={[styles.input, { paddingVertical: 0 }]}
             onValueChange={(itemValue) => setRole(itemValue)}
-            dropdownIconColor="#888" // Ajuster la couleur de l'icône du dropdown si nécessaire
+            dropdownIconColor="#888"
           >
             <Picker.Item label="Select your role" value="" enabled={false} />
-            <Picker.Item label="Freelance" value="freelance" />
+            <Picker.Item label="Freelancer" value="freelancer" />
             <Picker.Item label="Client" value="client" />
           </Picker>
         </View>
 
-        {/* Animated Register Button */}
+        {/* Register Button */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             style={styles.registerButton}
@@ -212,7 +239,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 15,
     marginBottom: 12,
-    borderWidth: 0, // Suppression de la bordure
   },
   inputIcon: {
     marginRight: 10,
@@ -229,10 +255,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     alignItems: "center",
     marginTop: 20,
-    shadowColor: "#0000FF",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
   },
   registerText: {
     color: "white",

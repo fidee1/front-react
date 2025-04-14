@@ -14,13 +14,16 @@ export function AuthProvider({ children }) {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         if (storedUser) {
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
+          console.log("Utilisateur chargé depuis AsyncStorage :", parsedUser);
+          setUser(parsedUser);
         }
       } catch (error) {
-        console.log("Error loading user from storage:", error);
+        console.log("Erreur lors du chargement de l'utilisateur depuis AsyncStorage :", error);
       }
     })();
   }, []);
+  
 
   const login = async (userData) => {
     setUser(userData);

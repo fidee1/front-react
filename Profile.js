@@ -14,7 +14,7 @@ import {
 import { launchImageLibrary } from "react-native-image-picker";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Toast from "react-native-toast-message";
-import api from "./api"; // Your Axios instance
+import api from "./api";
 import { AuthContext } from "./contexts/AuthContext";
 
 export default function Profile({ navigation }) {
@@ -25,8 +25,6 @@ export default function Profile({ navigation }) {
 
   const SERVER_URL = "http://localhost:5000/";
 
-  const [gender, setGender] = useState(userData?.gender || "");
-  const [category, setCategory] = useState(userData?.category || "");
   const [loading, setLoading] = useState(false);
   const [profileImage, setProfileImage] = useState(
     userData?.profileImage
@@ -36,9 +34,11 @@ export default function Profile({ navigation }) {
 
   const [formData, setFormData] = useState({
     fullName: userData?.fullName || "",
-    age: userData?.age ? String(userData.age) : "",
-    height: userData?.height ? String(userData.height) : "",
-    birthday: userData?.birthday ? userData.birthday.slice(0, 10) : "",
+    email: userData?.email || "",
+    competences: userData?.competences || "",
+    experience: userData?.experience || "",
+    portfolio: userData?.portfolio || "",
+    tarif: userData?.tarif || "",
   });
 
   const showToast = (type, message) => {
@@ -75,11 +75,11 @@ export default function Profile({ navigation }) {
   const handleSubmit = async () => {
     if (
       !formData.fullName ||
-      !formData.age ||
-      !formData.height ||
-      !formData.birthday ||
-      !gender ||
-      !category
+      !formData.email ||
+      !formData.competences ||
+      !formData.experience ||
+      !formData.portfolio ||
+      !formData.tarif
     ) {
       showToast("error", "Please fill all fields");
       return;
@@ -88,12 +88,9 @@ export default function Profile({ navigation }) {
     setLoading(true);
     try {
       const data = new FormData();
-      data.append("fullName", formData.fullName);
-      data.append("gender", gender);
-      data.append("age", Number(formData.age));
-      data.append("height", Number(formData.height));
-      data.append("birthday", formData.birthday);
-      data.append("category", category);
+      Object.entries(formData).forEach(([key, value]) => {
+        data.append(key, value);
+      });
 
       if (profileImage && typeof profileImage === "object") {
         data.append("profileImage", {
@@ -103,7 +100,7 @@ export default function Profile({ navigation }) {
         });
       }
 
-      const response = await api.put(`/users/profile/${userId}`, data, {
+      const response = await api.put(`/profile/${userId}`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
@@ -126,7 +123,7 @@ export default function Profile({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header Bar */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="white" />
@@ -140,6 +137,7 @@ export default function Profile({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        {/* Profile Image */}
         <View style={styles.profileContainer}>
           <TouchableOpacity onPress={selectImage} style={styles.imageWrapper}>
             <Image
@@ -160,40 +158,24 @@ export default function Profile({ navigation }) {
 
         {/* Form Fields */}
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Full Name"
-            value={formData.fullName}
-            onChangeText={(text) =>
-              setFormData({ ...formData, fullName: text })
-            }
-          />
-          <View style={styles.row}>
+          {[
+            { placeholder: "Full Name", key: "fullName" },
+            { placeholder: "Email", key: "email" },
+            { placeholder: "Compétences", key: "competences" },
+            { placeholder: "Expérience", key: "experience" },
+            { placeholder: "Portfolio", key: "portfolio" },
+            { placeholder: "Tarif (€)", key: "tarif" },
+          ].map((field) => (
             <TextInput
-              style={[styles.input, styles.halfInput]}
-              placeholder="Age"
-              keyboardType="numeric"
-              value={formData.age}
-              onChangeText={(text) => setFormData({ ...formData, age: text })}
-            />
-            <TextInput
-              style={[styles.input, styles.halfInput]}
-              placeholder="Height (cm)"
-              keyboardType="numeric"
-              value={formData.height}
+              key={field.key}
+              style={styles.input}
+              placeholder={field.placeholder}
+              value={formData[field.key]}
               onChangeText={(text) =>
-                setFormData({ ...formData, height: text })
+                setFormData({ ...formData, [field.key]: text })
               }
             />
-          </View>
-          <TextInput
-            style={styles.input}
-            placeholder="Birthday (YYYY-MM-DD)"
-            value={formData.birthday}
-            onChangeText={(text) =>
-              setFormData({ ...formData, birthday: text })
-            }
-          />
+          ))}
         </View>
 
         {/* Save Button */}
@@ -242,6 +224,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 5,
   },
+  inputContainer: { marginBottom: 20 },
   input: {
     borderWidth: 1,
     borderColor: "#E0E0E0",
@@ -249,8 +232,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
   },
-  row: { flexDirection: "row", justifyContent: "space-between" },
-  halfInput: { width: "48%" },
   saveButton: {
     backgroundColor: "#6A0DAD",
     padding: 16,
