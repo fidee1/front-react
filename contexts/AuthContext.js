@@ -1,11 +1,14 @@
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser, clearUser } from "../redux/actions/registerActions"; // Assume you have actions to handle user state
 
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.user);  // Getting user from Redux state
+  const loading = useSelector((state) => state.auth.loading);  // Optional: manage loading in Redux
 
   useEffect(() => {
     (async () => {
@@ -15,25 +18,24 @@ export function AuthProvider({ children }) {
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           console.log("Utilisateur chargé depuis AsyncStorage :", parsedUser);
-          setUser(parsedUser);
+          dispatch(setUser(parsedUser)); // Dispatch user to Redux
         } else {
           console.log("Aucun utilisateur trouvé dans AsyncStorage");
         }
       } catch (error) {
         console.log("Erreur lors du chargement de l'utilisateur depuis AsyncStorage :", error);
       } finally {
-        setLoading(false);
-        console.log("Chargement terminé, loading mis à false");
+        console.log("Chargement terminé");
       }
     })();
-  }, []);
+  }, [dispatch]);
 
   const login = async (userData) => {
     console.log("Données utilisateur lors de la connexion :", userData);
     if (!userData?.user?.role) {
       console.warn("Les données utilisateur manquent de rôle ou de structure correcte");
     }
-    setUser(userData);
+    dispatch(setUser(userData));  // Dispatch user data to Redux
     try {
       await AsyncStorage.setItem("user", JSON.stringify(userData));
       console.log("Utilisateur sauvegardé dans AsyncStorage :", userData);
@@ -43,7 +45,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    setUser(null);
+    dispatch(clearUser());  // Clear user in Redux
     try {
       await AsyncStorage.removeItem("user");
       console.log("Utilisateur supprimé de AsyncStorage");

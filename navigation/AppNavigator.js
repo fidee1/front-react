@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigation } from "@react-navigation/native"; // Import du hook
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "../LoginScreen";
 import RegisterScreen from "../RegisterScreen";
@@ -14,14 +15,15 @@ import Inbox from "../Inbox";
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const { isAuthenticated, user, role, token } = useSelector((state) => state.auth);
+  const { isAuthenticated, role } = useSelector((state) => state.auth);
+  const navigation = useNavigation(); // Récupère l'objet navigation
 
   useEffect(() => {
     if (isAuthenticated && role) {
       console.log("Rôle utilisateur détecté dans useEffect:", role);
-      navigation.navigate("acceuilScreen", { userRole: role }); // Passe le rôle en paramètre
+      navigation.navigate("acceuilScreen", { userRole: role }); // Navigation correcte
     }
-  }, [isAuthenticated, role]);
+  }, [isAuthenticated, role, navigation]);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

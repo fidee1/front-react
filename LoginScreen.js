@@ -8,11 +8,12 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  ImageBackground,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Toast from "react-native-toast-message";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import { loginUser } from './authSlice';
+import { loginUser } from "./authSlice";
 
 export default function LoginScreen({ navigation }) {
   const dispatch = useDispatch();
@@ -37,7 +38,6 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
-    // Dispatch l'action de login
     dispatch(loginUser({ email, password }))
       .unwrap()
       .then(() => {
@@ -67,82 +67,91 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.logoContainer}>
-        <Icon name="laptop-code" size={50} color="#000000" solid />
-        <Text style={styles.title}>Freelancy</Text>
-        <Text style={styles.subtitle}>Sometimes, you gotta move forward</Text>
-      </View>
-
-      {/* Champs de saisie */}
-      <View style={styles.card}>
-        <View style={styles.inputWrapper}>
-          <Icon name="envelope" size={18} color="#888" style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#AAA"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
+    <ImageBackground
+      source={require("./assets/images/img.png")}
+      style={styles.background}
+    >
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.logoContainer}>
+          <Icon name="laptop-code" size={50} color="#000000" solid />
+          <Text style={styles.title}>Freelancy</Text>
+          <Text style={styles.subtitle}>Sometimes, you gotta move forward</Text>
         </View>
 
-        <View style={styles.inputWrapper}>
-          <Icon name="lock" size={18} color="#888" style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#AAA"
-            value={password}
-            secureTextEntry
-            onChangeText={setPassword}
-          />
-        </View>
+        {/* Champs de saisie */}
+        <View style={styles.card}>
+          <View style={styles.inputWrapper}>
+            <Icon name="envelope" size={18} color="#888" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#AAA"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+          </View>
 
-        {/* Bouton animé */}
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <View style={styles.inputWrapper}>
+            <Icon name="lock" size={18} color="#888" style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#AAA"
+              value={password}
+              secureTextEntry
+              onChangeText={setPassword}
+            />
+          </View>
+
+          {/* Bouton animé */}
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={handleLogin}
+              disabled={loading}
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.loginText}>Log In</Text>
+              )}
+            </TouchableOpacity>
+          </Animated.View>
+
           <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
-            disabled={loading}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
+            style={styles.link}
+            onPress={() => navigation.navigate("ForgotPasswordScreen")}
           >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.loginText}>Log In</Text>
-            )}
+            <Text style={styles.linkText}>Forgot Password?</Text>
           </TouchableOpacity>
-        </Animated.View>
 
-        <TouchableOpacity
-          style={styles.link}
-          onPress={() => navigation.navigate("ForgotPasswordScreen")}
-        >
-          <Text style={styles.linkText}>Forgot Password?</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.link}
+            onPress={() => navigation.navigate("RegisterScreen")}
+          >
+            <Text style={styles.linkText}>New account? Sign up</Text>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={styles.link}
-          onPress={() => navigation.navigate("RegisterScreen")}
-        >
-          <Text style={styles.linkText}>New account? Sign up</Text>
-        </TouchableOpacity>
+        <Toast />
       </View>
-
-      <Toast />
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    resizeMode: "cover",
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,

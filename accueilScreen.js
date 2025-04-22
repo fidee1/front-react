@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import api from "./api";
@@ -11,13 +17,9 @@ function SidebarNav() {
   const token = useSelector((state) => state.auth.token); // Récupère le token via Redux
   const navigation = useNavigation();
 
-  console.log("Données utilisateur dans SidebarNav :", user);
-  console.log("Rôle utilisateur (Redux) :", userRole);
-
-  const [data, setData] = useState(null);
+  const [data, setData] = useState("");
 
   const baseNavItems = [
-    { name: "Dashboard", route: "DashboardHome", icon: "speedometer-outline" },
     { name: "Profile", route: "Profile", icon: "person-outline" },
   ];
 
@@ -37,14 +39,11 @@ function SidebarNav() {
     { name: "Inbox", route: "Inbox", icon: "mail-outline" },
   ];
 
-  // Détermine les éléments de navigation à afficher selon le rôle
   const navItems = [
     ...baseNavItems,
     ...(userRole === "freelancer" ? freelancerNavItems : []),
     ...(userRole === "client" ? clientNavItems : []),
   ];
-
-  console.log("Items de navigation générés :", navItems);
 
   useEffect(() => {
     const updateAccueilScreenData = async () => {
@@ -52,7 +51,7 @@ function SidebarNav() {
         try {
           const response = await api.put(
             `/acceuilScreen/${user.id}`,
-            {}, // Payload vide si non nécessaire
+            {},
             {
               headers: {
                 "Content-Type": "application/json",
@@ -60,7 +59,6 @@ function SidebarNav() {
               },
             }
           );
-          console.log("Réponse API :", response.data);
           setData(response.data);
         } catch (error) {
           console.error("Erreur lors de l'appel API :", error.response || error.message);
@@ -84,6 +82,7 @@ function SidebarNav() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.welcomeText}>Welcome</Text>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {navItems.map(renderNavItem)}
       </ScrollView>
@@ -95,21 +94,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f9fa",
-    paddingTop: 20,
+    justifyContent: "center", // Centre les éléments verticalement
+    paddingTop: 50, // Ajoute un espace en haut pour éviter que le contenu soit trop haut
+  },
+  welcomeText: {
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20, // Ajoute de l'espace sous le texte "Welcome"
+    marginTop: 10, // Ajoute un espace au-dessus pour qu'il ne touche pas le bord
   },
   scrollContainer: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
+    alignItems: "center", // Centre les éléments horizontalement
+    paddingHorizontal: 20,
+    paddingVertical: 20, // Ajoute un espace vertical pour un meilleur affichage
   },
   navItem: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 15,
     paddingHorizontal: 20,
     marginBottom: 10,
     backgroundColor: "#fff",
     borderRadius: 8,
     elevation: 3,
+    width: "90%", // Ajuste la largeur des éléments
   },
   icon: {
     marginRight: 15,
@@ -120,5 +130,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
 });
+
 
 export default SidebarNav;
