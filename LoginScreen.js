@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,16 +9,17 @@ import {
   Animated,
   Easing,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import Toast from "react-native-toast-message";
 import Icon from "react-native-vector-icons/FontAwesome5";
-import api from "./api";
-import { AuthContext } from "./contexts/AuthContext";
+import { loginUser } from './authSlice';
 
 export default function LoginScreen({ navigation }) {
-  const { login } = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const scaleAnim = new Animated.Value(1);
 
   const showToast = (type, message) => {
@@ -35,21 +36,16 @@ export default function LoginScreen({ navigation }) {
       showToast("error", "Please enter your email and password");
       return;
     }
-    setLoading(true);
-    try {
-      const response = await api.post("/login", { email, password });
-      const { token, user } = response.data;
-      login({ token, user });
-      showToast("success", "Login successful!");
-    } catch (error) {
-      let errorMessage = "Login failed";
-      if (error.response) {
-        errorMessage = error.response.data.error || error.response.statusText;
-      }
-      showToast("error", errorMessage);
-    } finally {
-      setLoading(false);
-    }
+
+    // Dispatch l'action de login
+    dispatch(loginUser({ email, password }))
+      .unwrap()
+      .then(() => {
+        showToast("success", "Login successful!");
+      })
+      .catch((err) => {
+        showToast("error", err || "Login failed. Please try again.");
+      });
   };
 
   const handlePressIn = () => {
@@ -74,14 +70,7 @@ export default function LoginScreen({ navigation }) {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.logoContainer}>
-        {/* Icône en noir */}
-        <Icon
-          name="laptop-code"
-          size={50}
-          color="#000000"
-          solid
-        />
-        {/* Titre en noir */}
+        <Icon name="laptop-code" size={50} color="#000000" solid />
         <Text style={styles.title}>Freelancy</Text>
         <Text style={styles.subtitle}>Sometimes, you gotta move forward</Text>
       </View>
@@ -89,12 +78,7 @@ export default function LoginScreen({ navigation }) {
       {/* Champs de saisie */}
       <View style={styles.card}>
         <View style={styles.inputWrapper}>
-          <Icon
-            name="envelope"
-            size={18}
-            color="#888"
-            style={styles.inputIcon}
-          />
+          <Icon name="envelope" size={18} color="#888" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -107,12 +91,7 @@ export default function LoginScreen({ navigation }) {
         </View>
 
         <View style={styles.inputWrapper}>
-          <Icon
-            name="lock"
-            size={18}
-            color="#888"
-            style={styles.inputIcon}
-          />
+          <Icon name="lock" size={18} color="#888" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -123,7 +102,7 @@ export default function LoginScreen({ navigation }) {
           />
         </View>
 
-        {/* Bouton animé en noir */}
+        {/* Bouton animé */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             style={styles.loginButton}
@@ -140,7 +119,6 @@ export default function LoginScreen({ navigation }) {
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Liens en noir */}
         <TouchableOpacity
           style={styles.link}
           onPress={() => navigation.navigate("ForgotPasswordScreen")}
@@ -175,7 +153,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: "#000000",     // titre en noir
+    color: "#000000",
     fontWeight: "bold",
     marginTop: 10,
   },
@@ -217,7 +195,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   loginButton: {
-    backgroundColor: "#000000",  // bouton en noir
+    backgroundColor: "#000000",
     paddingVertical: 16,
     borderRadius: 15,
     alignItems: "center",
@@ -237,7 +215,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   linkText: {
-    color: "#000000",      // liens en noir
+    color: "#000000",
     textDecorationLine: "underline",
     fontSize: 14,
   },

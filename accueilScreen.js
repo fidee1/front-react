@@ -1,19 +1,19 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { AuthContext } from "./contexts/AuthContext";
 import api from "./api";
 
 function SidebarNav() {
+  const userRole = useSelector((state) => state.auth.role); // Récupère le rôle via Redux
+  const user = useSelector((state) => state.auth.user); // Récupère l'utilisateur via Redux
+  const token = useSelector((state) => state.auth.token); // Récupère le token via Redux
   const navigation = useNavigation();
-  const { user } = useContext(AuthContext);
 
-  // Log pour inspecter le rôle utilisateur et le contexte complet
   console.log("Données utilisateur dans SidebarNav :", user);
-  console.log("Rôle utilisateur (user?.user?.role) :", user?.user?.role);
+  console.log("Rôle utilisateur (Redux) :", userRole);
 
-  const userRole = "freelancer";
   const [data, setData] = useState(null);
 
   const baseNavItems = [
@@ -37,44 +37,44 @@ function SidebarNav() {
     { name: "Inbox", route: "Inbox", icon: "mail-outline" },
   ];
 
-  // Log pour inspecter les items de navigation générés
+  // Détermine les éléments de navigation à afficher selon le rôle
   const navItems = [
     ...baseNavItems,
     ...(userRole === "freelancer" ? freelancerNavItems : []),
     ...(userRole === "client" ? clientNavItems : []),
   ];
+
   console.log("Items de navigation générés :", navItems);
 
   useEffect(() => {
     const updateAccueilScreenData = async () => {
-    if (user?.token && user?.id) {
+      if (token && user?.id) {
         try {
-            const response = await api.put(
-                `/acceuilScreen/${user.id}`,
-                {}, // Assurez-vous que ce payload est correct ou laissez vide si aucun payload n'est nécessaire
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${user.token}`,
-                    },
-                }
-            );
-            console.log("Réponse API :", response.data);
-            setData(response.data);
+          const response = await api.put(
+            `/acceuilScreen/${user.id}`,
+            {}, // Payload vide si non nécessaire
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          console.log("Réponse API :", response.data);
+          setData(response.data);
         } catch (error) {
-            console.error("Erreur lors de l'appel API :", error.response || error.message);
+          console.error("Erreur lors de l'appel API :", error.response || error.message);
         }
-    }
-};
-
+      }
+    };
 
     updateAccueilScreenData();
-  }, [user?.id, user?.token, data]);
+  }, [user?.id, token]);
 
   const renderNavItem = (item) => (
     <TouchableOpacity
       key={item.route}
-      style={[styles.navItem, { pointerEvents: "auto" }]} // Utilisation de style.pointerEvents
+      style={styles.navItem}
       onPress={() => navigation.navigate(item.route)}
     >
       <Ionicons name={item.icon} size={24} color="black" style={styles.icon} />
@@ -109,7 +109,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     backgroundColor: "#fff",
     borderRadius: 8,
-    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", // Remplacement de shadow properties par boxShadow
     elevation: 3,
   },
   icon: {

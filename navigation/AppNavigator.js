@@ -1,5 +1,5 @@
-// navigation/AppNavigator.js
-import React, { useContext } from "react";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import LoginScreen from "../LoginScreen";
 import RegisterScreen from "../RegisterScreen";
@@ -10,19 +10,24 @@ import MyProject from "../MyProject";
 import Claim from "../Claim";
 import Invoices from "../Invoices";
 import Inbox from "../Inbox";
-import { AuthContext } from "../contexts/AuthContext";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, user, role, token } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (isAuthenticated && role) {
+      console.log("Rôle utilisateur détecté dans useEffect:", role);
+      navigation.navigate("acceuilScreen", { userRole: role }); // Passe le rôle en paramètre
+    }
+  }, [isAuthenticated, role]);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isAuthenticated ? (
-        // Une fois authentifié, afficher l'écran d'accueil puis les autres pages
         <>
-          <Stack.Screen name="Accueil" component={accueilScreen} />
+          <Stack.Screen name="acceuilScreen" component={accueilScreen} />
           <Stack.Screen name="Profile" component={Profile} />
           <Stack.Screen name="ListOfOffers" component={ListOfOffers} />
           <Stack.Screen name="MyProject" component={MyProject} />
@@ -31,10 +36,9 @@ export default function AppNavigator() {
           <Stack.Screen name="Inbox" component={Inbox} />
         </>
       ) : (
-        // Si non authentifié, afficher les pages de connexion et d'inscription
         <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="LoginScreen" component={LoginScreen} />
+          <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
         </>
       )}
     </Stack.Navigator>

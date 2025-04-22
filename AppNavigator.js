@@ -17,8 +17,8 @@ const AppNavigator = () => {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
             
 
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="LoginScreen" component={LoginScreen} />
+      <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgetPassword}/>
       <Stack.Screen name="Profile" component={Profile}/>
       <Stack.Screen name="acceuilScreen" component={acceuilScreen}/>

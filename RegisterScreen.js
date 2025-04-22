@@ -9,58 +9,50 @@ import {
   ScrollView,
   Animated,
   Easing,
-  Picker,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import Toast from "react-native-toast-message";
-import api from "./api";
 import Icon from "react-native-vector-icons/FontAwesome";
+import RNPickerSelect from "react-native-picker-select";
+import { register } from "./redux/actions/registerActions";
 
 export default function RegisterScreen({ navigation }) {
-  const [name, setName] = useState(""); // Modification ici
+  const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("");
-  const [loading, setLoading] = useState(false);
   const scaleAnim = new Animated.Value(1);
+
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.register);
 
   const showToast = (type, message) => {
     Toast.show({ type, text1: message, position: "top", visibilityTime: 3000 });
   };
 
-  const handleRegister = async () => {
-    if (!name || !lastName || !email || !password || !confirmPassword || !role) { // Utilisation de name
+  const handleRegister = () => {
+    if (!name || !lastName || !email || !password || !confirmPassword || !role) {
       showToast("error", "Please fill in all fields");
       return;
     }
-  
+
     if (password !== confirmPassword) {
       showToast("error", "Passwords do not match");
       return;
     }
-  
-    setLoading(true);
-    try {
-      const response = await api.post("/register", {
-        name, // Modification ici
-        lastName,
-        email,
-        password,
-        role,
-      });
-  
-      showToast("success", "Registration successful! You can now log in.");
-      setTimeout(() => navigation.navigate("LoginScreen"), 1500);
-    } catch (error) {
-      let errorMessage = "Registration failed";
-      if (error.response) {
-        errorMessage = error.response.data.error || error.response.statusText;
-      }
-      showToast("error", errorMessage);
-    } finally {
-      setLoading(false);
-    }
+
+    dispatch(
+      register(
+        { name, lastName, email, password, role },
+        () => {
+          showToast("success", "Registration successful! You can now log in.");
+          setTimeout(() => navigation.navigate("LoginScreen"), 1500);
+        },
+        (errorMessage) => showToast("error", errorMessage)
+      )
+    );
   };
 
   const handlePressIn = () => {
@@ -68,7 +60,7 @@ export default function RegisterScreen({ navigation }) {
       toValue: 0.95,
       duration: 150,
       easing: Easing.ease,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start();
   };
 
@@ -77,29 +69,27 @@ export default function RegisterScreen({ navigation }) {
       toValue: 1,
       duration: 150,
       easing: Easing.ease,
-      useNativeDriver: true,
+      useNativeDriver: false,
     }).start();
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Header */}
       <View style={styles.logoContainer}>
-        <Icon name="user-plus" size={50} color="#0000FF" />
+        <Icon name="user-plus" size={50} color="#000" />
         <Text style={styles.title}>Create Account</Text>
         <Text style={styles.subtitle}>Welcome to our application</Text>
       </View>
 
-      {/* Input Fields */}
       <View style={styles.card}>
         <View style={styles.inputWrapper}>
           <Icon name="user" size={18} color="#888" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
-            placeholder="Name" // Modification ici
+            placeholder="Name"
             placeholderTextColor="#AAA"
-            value={name} // Modification ici
-            onChangeText={setName} // Modification ici
+            value={name}
+            onChangeText={setName}
           />
         </View>
 
@@ -151,21 +141,22 @@ export default function RegisterScreen({ navigation }) {
           />
         </View>
 
-        {/* Role Selection */}
         <View style={styles.inputWrapper}>
-          <Picker
-            selectedValue={role}
-            style={[styles.input, { paddingVertical: 0 }]}
-            onValueChange={(itemValue) => setRole(itemValue)}
-            dropdownIconColor="#888"
-          >
-            <Picker.Item label="Select your role" value="" enabled={false} />
-            <Picker.Item label="Freelancer" value="freelancer" />
-            <Picker.Item label="Client" value="client" />
-          </Picker>
+          <RNPickerSelect
+            onValueChange={(value) => setRole(value)}
+            items={[
+              { label: "Freelancer", value: "freelancer" },
+              { label: "Client", value: "client" },
+            ]}
+            style={{
+              inputAndroid: styles.picker,
+              inputIOS: styles.picker,
+            }}
+            value={role}
+            placeholder={{ label: "Select your role", value: null }}
+          />
         </View>
 
-        {/* Register Button */}
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
           <TouchableOpacity
             style={styles.registerButton}
@@ -182,7 +173,6 @@ export default function RegisterScreen({ navigation }) {
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Already have an account */}
         <TouchableOpacity
           style={styles.link}
           onPress={() => navigation.navigate("LoginScreen")}
@@ -211,7 +201,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    color: "#0000FF",
+    color: "#000",
     fontWeight: "bold",
     marginTop: 10,
   },
@@ -236,9 +226,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#F8F8F8",
-    borderRadius: 10,
+    borderRadius: 15,
     paddingHorizontal: 15,
-    marginBottom: 12,
+    marginBottom: 15,
   },
   inputIcon: {
     marginRight: 10,
@@ -249,8 +239,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
+  picker: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+    color: "#333",
+    backgroundColor: "#F8F8F8",
+    borderRadius: 15,
+    paddingHorizontal: 10,
+  },
   registerButton: {
-    backgroundColor: "#0000FF",
+    backgroundColor: "#000",
     paddingVertical: 16,
     borderRadius: 15,
     alignItems: "center",
@@ -266,7 +265,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   linkText: {
-    color: "#0000FF",
+    color: "#000",
     textDecorationLine: "underline",
     fontSize: 14,
   },
