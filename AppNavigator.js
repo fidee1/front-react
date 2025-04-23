@@ -10,6 +10,7 @@ import MyProject from './MyProject';
 import Claim from './Claim';
 import Invoices from './Invoices';
 import Inbox from './Inbox';
+import SplashScreen from './SplashScreen';
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -27,7 +28,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Claim" component={Claim} />
       <Stack.Screen name="Invoices" component={Invoices} />
       <Stack.Screen name="Inbox" component={Inbox} />
-
+      <Stack.Screen name="SplashScreen" component={SplashScreen} />
     </Stack.Navigator>
   );
 };

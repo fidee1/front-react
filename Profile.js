@@ -11,11 +11,9 @@ import {
   ActivityIndicator,
   Platform,
   Modal,
-  Pressable,
 } from "react-native";
-import { launchImageLibrary } from "react-native-image-picker";
+import { launchImageLibrary, launchCamera } from "react-native-image-picker";
 import Icon from "react-native-vector-icons/MaterialIcons";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Toast from "react-native-toast-message";
 import api from "./api";
 import { AuthContext } from "./contexts/AuthContext";
@@ -28,6 +26,23 @@ export default function Profile({ navigation }) {
 
   const SERVER_URL = "http://localhost:5000/";
 
+  const palette = {
+    RAISIN_BLACK: "#191627", 
+    ULTRA_VIOLET: "#6E548E", 
+    AFRICAN_VIOLET: "#9F86C0", 
+    LILAC: "#BE9CC7",  
+    THANILA: "#E3BAD5",     
+  };
+
+  const colors = {
+    primary: palette.ULTRA_VIOLET,
+    secondary: palette.AFRICAN_VIOLET,
+    accent: palette.LILAC,
+    dark: palette.RAISIN_BLACK,
+    light: "#FFFFFF",
+    background: "#FFFFFF",
+  };
+
   const [loading, setLoading] = useState(false);
   const [profileImage, setProfileImage] = useState(
     userData?.profileImage
@@ -37,17 +52,15 @@ export default function Profile({ navigation }) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(null);
-
-  const [formData, setFormData] = useState({
+  const [editFormData, setEditFormData] = useState({
     fullName: userData?.fullName || "",
     email: userData?.email || "",
     competences: userData?.competences || "",
-    experience: userData?.experience || "",
+    experience: userData?.experience || "0",
+    projectsDone: userData?.projectsDone || "0",
+    tarif: userData?.tarif || "0",
     portfolio: userData?.portfolio || "",
-    tarif: userData?.tarif || "",
   });
-
-  const [editFormData, setEditFormData] = useState({ ...formData });
 
   const showToast = (type, message) => {
     Toast.show({
@@ -59,11 +72,47 @@ export default function Profile({ navigation }) {
   };
 
   const selectImage = () => {
-    launchImageLibrary({ mediaType: "photo", quality: 0.8 }, (response) => {
+    const options = {
+      title: 'Select Profile Photo',
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+
+    launchImageLibrary(options, (response) => {
       if (response.didCancel) {
         showToast("info", "Image selection canceled");
       } else if (response.errorMessage) {
         showToast("error", "Error selecting image");
+      } else if (response.assets && response.assets.length > 0) {
+        const asset = response.assets[0];
+        let imageUri = asset.uri;
+        if (Platform.OS === "android" && !imageUri.startsWith("file://")) {
+          imageUri = "file://" + imageUri;
+        }
+
+        setPreviewPhoto({
+          uri: imageUri,
+          fileName: asset.fileName || "profile.jpg",
+          type: asset.type || "image/jpeg",
+        });
+      }
+    });
+  };
+
+  const takePhoto = () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 0.8,
+      saveToPhotos: true,
+    };
+
+    launchCamera(options, (response) => {
+      if (response.didCancel) {
+        showToast("info", "Camera canceled");
+      } else if (response.errorMessage) {
+        showToast("error", "Camera error");
       } else if (response.assets && response.assets.length > 0) {
         const asset = response.assets[0];
         let imageUri = asset.uri;
@@ -94,8 +143,9 @@ export default function Profile({ navigation }) {
       !editFormData.email ||
       !editFormData.competences ||
       !editFormData.experience ||
-      !editFormData.portfolio ||
-      !editFormData.tarif
+      !editFormData.projectsDone ||
+      !editFormData.tarif ||
+      !editFormData.portfolio
     ) {
       showToast("error", "Please fill all fields");
       return;
@@ -124,7 +174,6 @@ export default function Profile({ navigation }) {
       });
 
       showToast("success", "Profile updated successfully!");
-      setFormData({ ...editFormData });
       setShowEditModal(false);
 
       const { updatedUser } = response.data;
@@ -139,21 +188,16 @@ export default function Profile({ navigation }) {
     }
   };
 
-  const completedProjects = 3; // Vous devrez récupérer cette valeur depuis votre API
-
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+      <View style={[styles.header, { backgroundColor: colors.primary }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          Hi, {formData.fullName || "User"}
-        </Text>
-        <TouchableOpacity onPress={logout}>
-          <Icon name="logout" size={24} color="white" />
-        </TouchableOpacity>
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Hi, {editFormData.fullName || "User"}</Text>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -171,24 +215,24 @@ export default function Profile({ navigation }) {
                     : { uri: profileImage }
                   : require("./assets/avatar-placeholder.png")
               }
-              style={styles.profileImage}
+              style={[styles.profileImage, { borderColor: colors.primary }]}
             />
-            <View style={styles.cameraIcon}>
+            <View style={[styles.cameraIcon, { backgroundColor: colors.primary }]}>
               <Icon name="photo-camera" size={22} color="white" />
             </View>
           </TouchableOpacity>
 
           <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{formData.experience || "0"}+</Text>
+            <View style={[styles.statItem, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
+              <Text style={[styles.statValue, { color: colors.primary }]}>{editFormData.experience || "0"}+</Text>
               <Text style={styles.statLabel}>Years Experience</Text>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{completedProjects}</Text>
+            <View style={[styles.statItem, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
+              <Text style={[styles.statValue, { color: colors.primary }]}>{editFormData.projectsDone || "0"}</Text>
               <Text style={styles.statLabel}>Projects Done</Text>
             </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>${formData.tarif || "0"}/hr</Text>
+            <View style={[styles.statItem, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
+              <Text style={[styles.statValue, { color: colors.primary }]}>${editFormData.tarif || "0"}/hr</Text>
               <Text style={styles.statLabel}>Hourly Rate</Text>
             </View>
           </View>
@@ -197,32 +241,30 @@ export default function Profile({ navigation }) {
         {/* Profile Information */}
         <View style={styles.infoContainer}>
           <View style={styles.sectionHeader}>
-            <Icon name="person" size={20} color="#6A0DAD" />
+            <Icon name="person" size={20} color={colors.primary} />
             <Text style={styles.sectionTitle}>Professional Information</Text>
           </View>
 
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Full Name:</Text>
-              <Text style={styles.infoValue}>{formData.fullName}</Text>
+              <Text style={styles.infoValue}>{editFormData.fullName}</Text>
             </View>
           </View>
 
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Email:</Text>
-              <Text style={styles.infoValue}>
-                <Icon name="email" size={16} color="#6A0DAD" /> {formData.email}
-              </Text>
+              <Text style={styles.infoValue}>{editFormData.email}</Text>
             </View>
           </View>
 
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
             <View style={styles.infoItem}>
               <Text style={styles.infoLabel}>Skills:</Text>
               <View style={styles.skillsContainer}>
-                {formData.competences?.split(",").map((skill, index) => (
-                  <View key={index} style={styles.skillBadge}>
+                {editFormData.competences?.split(",").map((skill, index) => (
+                  <View key={index} style={[styles.skillBadge, { backgroundColor: colors.secondary }]}>
                     <Text style={styles.skillText}>{skill.trim()}</Text>
                   </View>
                 ))}
@@ -230,19 +272,16 @@ export default function Profile({ navigation }) {
             </View>
           </View>
 
-          <View style={styles.infoCard}>
+          <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Portfolio:</Text>
-              <Text style={styles.infoValue}>{formData.portfolio}</Text>
+              <Text style={styles.infoLabel}>My Projects:</Text>
+              <Text style={styles.infoValue}>{editFormData.portfolio}</Text>
             </View>
           </View>
 
           <TouchableOpacity 
-            style={styles.editButton} 
-            onPress={() => {
-              setEditFormData({ ...formData });
-              setShowEditModal(true);
-            }}
+            style={[styles.editButton, { backgroundColor: colors.primary }]} 
+            onPress={() => setShowEditModal(true)}
           >
             <Icon name="edit" size={18} color="white" />
             <Text style={styles.editButtonText}>Edit Profile</Text>
@@ -258,48 +297,58 @@ export default function Profile({ navigation }) {
         onRequestClose={() => setShowEditModal(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.accent }]}>
+            <Text style={[styles.modalTitle, { color: colors.dark }]}>Edit Profile</Text>
             <TouchableOpacity onPress={() => setShowEditModal(false)}>
-              <Icon name="close" size={24} color="#6A0DAD" />
+              <Icon name="close" size={24} color={colors.primary} />
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.modalContent}>
             <View style={styles.modalSection}>
-              <Text style={styles.sectionTitle}>Personal Information</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primary }]}>Personal Information</Text>
               
               {[
                 { label: "Full Name", key: "fullName" },
                 { label: "Email", key: "email" },
                 { label: "Skills (comma separated)", key: "competences" },
                 { label: "Experience (years)", key: "experience" },
-                { label: "Portfolio", key: "portfolio" },
+                { label: "Projects Done", key: "projectsDone" },
                 { label: "Hourly Rate ($)", key: "tarif" },
+                { label: "My Projects", key: "portfolio" },
               ].map((field) => (
                 <View key={field.key} style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}>{field.label}</Text>
+                  <Text style={[styles.inputLabel, { color: colors.dark }]}>{field.label}</Text>
                   <TextInput
-                    style={styles.modalInput}
+                    style={[styles.modalInput, { 
+                      backgroundColor: colors.light,
+                      borderColor: colors.accent,
+                      borderWidth: 1,
+                      color: colors.dark
+                    }]}
                     value={editFormData[field.key]}
                     onChangeText={(text) =>
                       setEditFormData({ ...editFormData, [field.key]: text })
                     }
+                    keyboardType={field.key === 'experience' || field.key === 'projectsDone' || field.key === 'tarif' ? 'numeric' : 'default'}
                   />
                 </View>
               ))}
             </View>
           </ScrollView>
 
-          <View style={styles.modalFooter}>
+          <View style={[styles.modalFooter, { borderTopColor: colors.accent }]}>
             <TouchableOpacity 
-              style={styles.cancelButton}
+              style={[styles.cancelButton, { 
+                borderColor: colors.primary,
+                backgroundColor: colors.light
+              }]}
               onPress={() => setShowEditModal(false)}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={[styles.cancelButtonText, { color: colors.primary }]}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity 
-              style={styles.saveButton}
+              style={[styles.saveButton, { backgroundColor: colors.primary }]}
               onPress={handleSubmit}
               disabled={loading}
             >
@@ -321,15 +370,15 @@ export default function Profile({ navigation }) {
         onRequestClose={() => setShowPhotoModal(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Change Profile Photo</Text>
+          <View style={[styles.modalHeader, { borderBottomColor: colors.accent }]}>
+            <Text style={[styles.modalTitle, { color: colors.dark }]}>Change Profile Photo</Text>
             <TouchableOpacity onPress={() => setShowPhotoModal(false)}>
-              <Icon name="close" size={24} color="#6A0DAD" />
+              <Icon name="close" size={24} color={colors.primary} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.photoModalContent}>
-            <View style={styles.avatarPreview}>
+            <View style={[styles.avatarPreview, { borderColor: colors.primary }]}>
               <Image
                 source={
                   previewPhoto
@@ -344,35 +393,54 @@ export default function Profile({ navigation }) {
               />
             </View>
 
-            <TouchableOpacity 
-              style={styles.photoButton}
-              onPress={selectImage}
-            >
-              <Text style={styles.photoButtonText}>Choose Photo</Text>
-            </TouchableOpacity>
+            <View style={styles.photoOptions}>
+              <TouchableOpacity 
+                style={[styles.photoOptionButton, { 
+                  backgroundColor: colors.light,
+                  borderColor: colors.primary,
+                  borderWidth: 1
+                }]}
+                onPress={selectImage}
+              >
+                <Icon name="photo-library" size={24} color={colors.primary} />
+                <Text style={[styles.photoOptionText, { color: colors.primary }]}>Choose from Gallery</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.photoOptionButton, { 
+                  backgroundColor: colors.light,
+                  borderColor: colors.primary,
+                  borderWidth: 1
+                }]}
+                onPress={takePhoto}
+              >
+                <Icon name="photo-camera" size={24} color={colors.primary} />
+                <Text style={[styles.photoOptionText, { color: colors.primary }]}>Take Photo</Text>
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.photoTips}>
-              <Text style={styles.tipsTitle}>Photo Guidelines</Text>
+              <Text style={[styles.tipsTitle, { color: colors.dark }]}>Photo Guidelines</Text>
               <View style={styles.tipItem}>
-                <FontAwesome name="check" size={16} color="#10B981" />
-                <Text style={styles.tipText}>Use high-quality images</Text>
+                <Icon name="check" size={16} color="#10B981" />
+                <Text style={[styles.tipText, { color: colors.dark }]}>Use high-quality images</Text>
               </View>
               <View style={styles.tipItem}>
-                <FontAwesome name="check" size={16} color="#10B981" />
-                <Text style={styles.tipText}>Face should be clearly visible</Text>
+                <Icon name="check" size={16} color="#10B981" />
+                <Text style={[styles.tipText, { color: colors.dark }]}>Face should be clearly visible</Text>
               </View>
               <View style={styles.tipItem}>
-                <FontAwesome name="check" size={16} color="#10B981" />
-                <Text style={styles.tipText}>Square images work best</Text>
-              </View>
-              <View style={styles.tipItem}>
-                <FontAwesome name="check" size={16} color="#10B981" />
-                <Text style={styles.tipText}>Max file size: 5MB</Text>
+                <Icon name="check" size={16} color="#10B981" />
+                <Text style={[styles.tipText, { color: colors.dark }]}>Square images work best</Text>
               </View>
             </View>
 
             <TouchableOpacity 
-              style={[styles.saveButton, !previewPhoto && styles.disabledButton]}
+              style={[
+                styles.saveButton, 
+                { backgroundColor: colors.primary },
+                !previewPhoto && styles.disabledButton
+              ]}
               onPress={savePhoto}
               disabled={!previewPhoto}
             >
@@ -388,16 +456,34 @@ export default function Profile({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F5F5F5" },
+  container: { 
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
   header: {
     flexDirection: "row",
-    backgroundColor: "#6A0DAD",
     padding: 16,
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-start",
+    paddingTop: Platform.OS === 'android' ? 40 : 16,
   },
-  headerTitle: { color: "white", fontSize: 18, fontWeight: "600" },
-  content: { padding: 20 },
+  backButton: {
+    marginRight: 15,
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    marginLeft: -40,
+  },
+  headerTitle: { 
+    color: "white", 
+    fontSize: 20, 
+    fontWeight: "600",
+  },
+  content: { 
+    padding: 20,
+    paddingTop: 10,
+  },
   
   // Profile Section
   profileContainer: { 
@@ -418,13 +504,11 @@ const styles = StyleSheet.create({
     height: 150,
     borderRadius: 75,
     borderWidth: 3,
-    borderColor: "#6A0DAD",
   },
   cameraIcon: {
     position: "absolute",
     bottom: 10,
     right: 10,
-    backgroundColor: "#6A0DAD",
     borderRadius: 15,
     padding: 5,
   },
@@ -438,7 +522,6 @@ const styles = StyleSheet.create({
   },
   statItem: {
     alignItems: "center",
-    backgroundColor: "rgba(239, 246, 255, 0.7)",
     borderRadius: 10,
     padding: 12,
     flex: 1,
@@ -447,7 +530,6 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#3B82F6",
   },
   statLabel: {
     fontSize: 12,
@@ -474,16 +556,13 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#1E293B",
     marginLeft: 10,
+    color: "#191627",
   },
   infoCard: {
-    backgroundColor: "#F8FAFC",
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
   },
   infoItem: {
     flexDirection: "row",
@@ -492,16 +571,16 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontWeight: "600",
-    color: "#334155",
     fontSize: 14,
+    color: "#191627",
   },
   infoValue: {
-    color: "#475569",
     fontSize: 14,
     flexShrink: 1,
     textAlign: "right",
     flex: 1,
     marginLeft: 10,
+    color: "#191627",
   },
   skillsContainer: {
     flexDirection: "row",
@@ -510,7 +589,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   skillBadge: {
-    backgroundColor: "#6A0DAD",
     borderRadius: 15,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -523,14 +601,13 @@ const styles = StyleSheet.create({
   
   // Edit Button
   editButton: {
-    backgroundColor: "#6A0DAD",
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
     marginTop: 10,
-    shadowColor: "#6A0DAD",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -554,12 +631,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: "#1E293B",
   },
   modalContent: {
     padding: 20,
@@ -573,26 +648,20 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#334155",
     marginBottom: 5,
   },
   modalInput: {
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
     borderRadius: 8,
     padding: 12,
-    backgroundColor: "#F8FAFC",
   },
   modalFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 20,
     borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
   },
   cancelButton: {
     borderWidth: 1,
-    borderColor: "#6A0DAD",
     borderRadius: 8,
     padding: 15,
     flex: 1,
@@ -600,12 +669,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelButtonText: {
-    color: "#6A0DAD",
     fontSize: 16,
     fontWeight: "600",
   },
   saveButton: {
-    backgroundColor: "#6A0DAD",
     borderRadius: 8,
     padding: 15,
     flex: 1,
@@ -630,7 +697,6 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 100,
     borderWidth: 3,
-    borderColor: "#6A0DAD",
     marginBottom: 20,
     overflow: "hidden",
   },
@@ -638,18 +704,22 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  photoButton: {
-    backgroundColor: "#E0E7FF",
+  photoOptions: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  photoOptionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 15,
     borderRadius: 8,
-    width: "100%",
-    alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 15,
   },
-  photoButtonText: {
-    color: "#4F46E5",
+  photoOptionText: {
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 10,
   },
   photoTips: {
     width: "100%",
@@ -658,7 +728,6 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1E293B",
     marginBottom: 15,
   },
   tipItem: {
@@ -667,7 +736,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tipText: {
-    color: "#475569",
     fontSize: 14,
     marginLeft: 10,
   },
