@@ -76,7 +76,7 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <ImageBackground
-      source={require("./assets/images/img.png")}
+      source={require("./assets/images/backg.jpg")}
       style={styles.background}
     >
       <ScrollView contentContainerStyle={styles.container}>
@@ -198,8 +198,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingTop: 120,
+    paddingVertical: 130,
+    paddingTop: 100,
   },
   logoContainer: {
     alignItems: "center",
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 20,
     color: "#000",
     marginBottom: 10,
   },

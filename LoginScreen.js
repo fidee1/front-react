@@ -68,7 +68,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <ImageBackground
-      source={require("./assets/images/img.png")}
+      source={require("./assets/images/backg.jpg")}
       style={styles.background}
     >
       <View style={styles.container}>
@@ -167,8 +167,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   subtitle: {
-    fontSize: 16,
-    color: "#444",
+    fontSize: 20,
+    color: "#000000",
     marginBottom: 20,
     textAlign: "center",
   },

@@ -9,10 +9,11 @@ import {
   SafeAreaView,
   Image,
   ActivityIndicator,
-  Platform,
+  Platform, // <-- Platform est déjà importé ici
   Modal,
 } from "react-native";
-import { launchImageLibrary, launchCamera } from "react-native-image-picker";
+import * as ImagePicker from 'expo-image-picker';
+// Supprimez cette ligne en double : import { Platform } from 'react-native';
 import Icon from "react-native-vector-icons/MaterialIcons";
 import Toast from "react-native-toast-message";
 import api from "./api";
@@ -27,18 +28,18 @@ export default function Profile({ navigation }) {
   const SERVER_URL = "http://localhost:5000/";
 
   const palette = {
-    RAISIN_BLACK: "#191627", 
-    ULTRA_VIOLET: "#6E548E", 
-    AFRICAN_VIOLET: "#9F86C0", 
-    LILAC: "#BE9CC7",  
-    THANILA: "#E3BAD5",     
+    LIGHT_BLUE: "#ADE1FB",
+    MEDIUM_BLUE: "#266CA9", 
+    DARK_BLUE: "#0F2573",
+    DARKER_BLUE: "#041D56",
+    DARKEST_BLUE: "#01082D"
   };
 
   const colors = {
-    primary: palette.ULTRA_VIOLET,
-    secondary: palette.AFRICAN_VIOLET,
-    accent: palette.LILAC,
-    dark: palette.RAISIN_BLACK,
+    primary: palette.MEDIUM_BLUE,
+    secondary: palette.DARK_BLUE,
+    accent: palette.LIGHT_BLUE,
+    dark: palette.DARKEST_BLUE,
     light: "#FFFFFF",
     background: "#FFFFFF",
   };
@@ -71,62 +72,53 @@ export default function Profile({ navigation }) {
     });
   };
 
-  const selectImage = () => {
-    const options = {
-      title: 'Select Profile Photo',
-      storageOptions: {
-        skipBackup: true,
-        path: 'images',
-      },
-    };
-
-    launchImageLibrary(options, (response) => {
-      if (response.didCancel) {
-        showToast("info", "Image selection canceled");
-      } else if (response.errorMessage) {
-        showToast("error", "Error selecting image");
-      } else if (response.assets && response.assets.length > 0) {
-        const asset = response.assets[0];
-        let imageUri = asset.uri;
-        if (Platform.OS === "android" && !imageUri.startsWith("file://")) {
-          imageUri = "file://" + imageUri;
-        }
-
-        setPreviewPhoto({
-          uri: imageUri,
-          fileName: asset.fileName || "profile.jpg",
-          type: asset.type || "image/jpeg",
-        });
-      }
+  const selectImage = async () => {
+    // Demande la permission
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showToast("error", "Permission to access gallery was denied");
+      return;
+    }
+  
+    // Ouvre la galerie
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [1, 1], // Format carré (optionnel)
     });
+  
+    if (!result.canceled && result.assets) {
+      setPreviewPhoto({
+        uri: result.assets[0].uri,
+        fileName: result.assets[0].fileName || "profile.jpg",
+        type: result.assets[0].type || "image/jpeg",
+      });
+    }
   };
 
-  const takePhoto = () => {
-    const options = {
-      mediaType: 'photo',
+  const takePhoto = async () => {
+    // Demande la permission
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      showToast("error", "Permission to access camera was denied");
+      return;
+    }
+  
+    // Ouvre l'appareil photo
+    const result = await ImagePicker.launchCameraAsync({
       quality: 0.8,
-      saveToPhotos: true,
-    };
-
-    launchCamera(options, (response) => {
-      if (response.didCancel) {
-        showToast("info", "Camera canceled");
-      } else if (response.errorMessage) {
-        showToast("error", "Camera error");
-      } else if (response.assets && response.assets.length > 0) {
-        const asset = response.assets[0];
-        let imageUri = asset.uri;
-        if (Platform.OS === "android" && !imageUri.startsWith("file://")) {
-          imageUri = "file://" + imageUri;
-        }
-
-        setPreviewPhoto({
-          uri: imageUri,
-          fileName: asset.fileName || "profile.jpg",
-          type: asset.type || "image/jpeg",
-        });
-      }
+      allowsEditing: true,
+      aspect: [1, 1], // Format carré (optionnel)
     });
+  
+    if (!result.canceled && result.assets) {
+      setPreviewPhoto({
+        uri: result.assets[0].uri,
+        fileName: result.assets[0].fileName || "photo.jpg",
+        type: result.assets[0].type || "image/jpeg",
+      });
+    }
   };
 
   const savePhoto = () => {
@@ -225,15 +217,15 @@ export default function Profile({ navigation }) {
           <View style={styles.statsContainer}>
             <View style={[styles.statItem, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
               <Text style={[styles.statValue, { color: colors.primary }]}>{editFormData.experience || "0"}+</Text>
-              <Text style={styles.statLabel}>Years Experience</Text>
+              <Text style={[styles.statLabel, { color: colors.dark }]}>Years Experience</Text>
             </View>
             <View style={[styles.statItem, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
               <Text style={[styles.statValue, { color: colors.primary }]}>{editFormData.projectsDone || "0"}</Text>
-              <Text style={styles.statLabel}>Projects Done</Text>
+              <Text style={[styles.statLabel, { color: colors.dark }]}>Projects Done</Text>
             </View>
             <View style={[styles.statItem, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
               <Text style={[styles.statValue, { color: colors.primary }]}>${editFormData.tarif || "0"}/hr</Text>
-              <Text style={styles.statLabel}>Hourly Rate</Text>
+              <Text style={[styles.statLabel, { color: colors.dark }]}>Hourly Rate</Text>
             </View>
           </View>
         </View>
@@ -242,40 +234,36 @@ export default function Profile({ navigation }) {
         <View style={styles.infoContainer}>
           <View style={styles.sectionHeader}>
             <Icon name="person" size={20} color={colors.primary} />
-            <Text style={styles.sectionTitle}>Professional Information</Text>
+            <Text style={[styles.sectionTitle, { color: colors.dark }]}>Professional Information</Text>
           </View>
 
           <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Full Name:</Text>
-              <Text style={styles.infoValue}>{editFormData.fullName}</Text>
+              <Text style={[styles.infoLabel, { color: colors.dark }]}>Full Name:</Text>
+              <Text style={[styles.infoValue, { color: colors.dark }]}>{editFormData.fullName}</Text>
             </View>
           </View>
 
           <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Email:</Text>
-              <Text style={styles.infoValue}>{editFormData.email}</Text>
+              <Text style={[styles.infoLabel, { color: colors.dark }]}>Email:</Text>
+              <Text style={[styles.infoValue, { color: colors.dark }]}>{editFormData.email}</Text>
             </View>
           </View>
 
           <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>Skills:</Text>
-              <View style={styles.skillsContainer}>
-                {editFormData.competences?.split(",").map((skill, index) => (
-                  <View key={index} style={[styles.skillBadge, { backgroundColor: colors.secondary }]}>
-                    <Text style={styles.skillText}>{skill.trim()}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
+           <View style={styles.infoItem}>
+            <Text style={[styles.infoLabel, { color: colors.dark }]}>Skills:</Text>
+            <Text style={[styles.infoValue, { color: colors.dark }]}>
+              {editFormData.competences?.replace(/,/g, ", ")}  {/* Ajoute un espace après les virgules */}
+            </Text>
+           </View>
           </View>
 
           <View style={[styles.infoCard, { backgroundColor: colors.light, borderColor: colors.accent, borderWidth: 1 }]}>
             <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>My Projects:</Text>
-              <Text style={styles.infoValue}>{editFormData.portfolio}</Text>
+              <Text style={[styles.infoLabel, { color: colors.dark }]}>My Projects:</Text>
+              <Text style={[styles.infoValue, { color: colors.dark }]}>{editFormData.portfolio}</Text>
             </View>
           </View>
 
@@ -296,7 +284,7 @@ export default function Profile({ navigation }) {
         visible={showEditModal}
         onRequestClose={() => setShowEditModal(false)}
       >
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.light }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.accent }]}>
             <Text style={[styles.modalTitle, { color: colors.dark }]}>Edit Profile</Text>
             <TouchableOpacity onPress={() => setShowEditModal(false)}>
@@ -369,7 +357,7 @@ export default function Profile({ navigation }) {
         visible={showPhotoModal}
         onRequestClose={() => setShowPhotoModal(false)}
       >
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer, { backgroundColor: colors.light }]}>
           <View style={[styles.modalHeader, { borderBottomColor: colors.accent }]}>
             <Text style={[styles.modalTitle, { color: colors.dark }]}>Change Profile Photo</Text>
             <TouchableOpacity onPress={() => setShowPhotoModal(false)}>
@@ -533,7 +521,6 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: "#64748B",
     marginTop: 5,
   },
   
@@ -557,7 +544,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginLeft: 10,
-    color: "#191627",
   },
   infoCard: {
     borderRadius: 8,
@@ -572,7 +558,6 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontWeight: "600",
     fontSize: 14,
-    color: "#191627",
   },
   infoValue: {
     fontSize: 14,
@@ -580,7 +565,6 @@ const styles = StyleSheet.create({
     textAlign: "right",
     flex: 1,
     marginLeft: 10,
-    color: "#191627",
   },
   skillsContainer: {
     flexDirection: "row",
