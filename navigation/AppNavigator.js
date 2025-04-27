@@ -12,7 +12,7 @@ import Claim from "../Claim";
 import Invoices from "../Invoices";
 import Inbox from "../Inbox";
 import SplashScreen from "../SplashScreen";
-
+import ProfilClient from "../ProfilClient";
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -23,7 +23,7 @@ export default function AppNavigator() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSplashVisible(false); // Cache la SplashScreen après 3 secondes
-    }, 3000);
+    },3000)
     return () => clearTimeout(timer); // Nettoie le timer
   }, []);
 
@@ -47,6 +47,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Claim" component={Claim} />
           <Stack.Screen name="Invoices" component={Invoices} />
           <Stack.Screen name="Inbox" component={Inbox} />
+          <Stack.Screen name="ProfilClient"component={ProfilClient}/>
         </>
       ) : (
         <>

@@ -1,25 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { ImageBackground, StyleSheet } from 'react-native';
 
 const SplashScreen = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Bienvenue sur Freelance Missions</Text>
-    </View>
+    <ImageBackground
+      source={require('./assets/images/splash.png')}
+      style={styles.background}
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#4A90E2', // Change cette couleur si besoin
-  },
-  text: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: 'bold',
+    resizeMode: 'cover', // Assure que l'image couvre tout l'écran
   },
 });
 

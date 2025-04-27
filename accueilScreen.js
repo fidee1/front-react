@@ -61,6 +61,7 @@ function SidebarNav() {
 
   // Éléments de navigation pour le client
   const clientNavItems = [
+    { name: "Profil Client", route: "ProfilClient", icon: "person-outline" },
     { name: "Invoices", route: "Invoices", icon: "cash-outline" },
     { name: "Project Management", route: "ProjectManagement", icon: "construct-outline" },
     { name: "Claim", route: "Claim", icon: "library-outline" },
@@ -149,8 +150,10 @@ function SidebarNav() {
         {userRole === "client" && isSidebarVisible && (
           <View style={styles.sidebar}>
             <View style={styles.sidebarHeader}>
-      <Text style={styles.sidebarTitle}>Freelancy</Text>
-    </View>
+            <FontAwesome5 name="laptop-code" size={28}style={styles.headerIcon} />
+            <Text style={styles.sidebarTitle}>Freelancy</Text>
+            </View>
+
             <ScrollView contentContainerStyle={styles.scrollContainer}>
               {navItems.map(renderNavItem)}
             </ScrollView>
@@ -220,11 +223,11 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   sidebar: {
-    width:200,
+    width: 200,
     backgroundColor: "#ADE1FB",
     borderRightWidth: 1,
     borderRightColor: "#ddd",
-    paddingTop: 50,
+    paddingTop: 60,//lace légèrement les éléments vers le haut
     position: "absolute",
     left: 0,
     top: 0,
@@ -252,7 +255,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top:-40,
+    top:-15,
     right:-20,
     borderRadius: 20,
     padding: 15,
@@ -291,20 +294,22 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   sidebarHeader: {
-    alignItems: "flex-start", // Aligner le titre à gauche
-    marginBottom: 0, // Espacement sous le titre
-    paddingLeft:10, // Ajouter un peu d'espace à gauche pour décaler le titre
+    alignItems: "center", // Centre l'icône et le titre dans la barre latérale
+    marginBottom: -15,
   },
-  
   sidebarTitle: {
     fontSize: 20,
     fontWeight: "bold", // Poids du texte
     color: "#266CA9", // Couleur bleue
-    letterSpacing: 2, // Espacement entre les lettres pour un effet stylé
-    textTransform: "uppercase", // Texte en majuscules
+   //etterSpacing: 2, // Espacement entre les lettres
+    //xtTransform: "uppercase", // Texte en majuscules
     fontFamily: "Borsok", // Police Borsok
-    marginTop: -40, // Ajuste la position verticale du titre si nécessaire
-  }
+    marginTop: 10, // Ajuste la position verticale du titre
+  },
+  sidebarIcon: {
+    color: "#266CA9", // Couleur de l'icône
+    marginBottom: 5, // Espace entre l'icône et le titre
+  },
   
 });
 
