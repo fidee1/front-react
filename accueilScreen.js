@@ -9,6 +9,9 @@ import {
   TouchableWithoutFeedback,
   ImageBackground,
   Alert,
+  Button,
+  TextInput,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
@@ -16,6 +19,29 @@ import { logout } from "./authSlice"; // Assurez-vous que le fichier de Redux es
 import api from "./api";
 
 function SidebarNav() {
+//const userRole = useSelector((state) => state.auth.role); // Récupérer le rôle de l'utilisateur depuis Redux
+  const [showForm, setShowForm] = useState(false); // Contrôler l'affichage du formulaire
+  const [projectTitle, setProjectTitle] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [projectBudget, setProjectBudget] = useState("");
+  const [projectDeadline, setProjectDeadline] = useState("");
+
+  // Fonction pour publier le projet
+  const handlePublishProject = () => {
+    if (!projectTitle || !projectDescription || !projectBudget || !projectDeadline) {
+      Alert.alert("Error", "All fields must be filled!");
+    } else {
+      // Simuler l'envoi des données
+      Alert.alert("Success", "Your project has been published!");
+      // Réinitialiser le formulaire
+      setProjectTitle("");
+      setProjectDescription("");
+      setProjectBudget("");
+      setProjectDeadline("");
+      setShowForm(false);
+    }
+  };
+
   const userRole = useSelector((state) => state.auth.role); // Récupère le rôle via Redux
   const user = useSelector((state) => state.auth.user); // Récupère l'utilisateur via Redux
   const token = useSelector((state) => state.auth.token); // Récupère le token via Redux
@@ -25,19 +51,17 @@ function SidebarNav() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false); // État pour afficher/masquer la barre latérale
   const [data, setData] = useState("");
 
-  // Fonction pour gérer la déconnexion avec l'alerte
   const handleLogout = () => {
-    console.log("Logout clicked");
     Alert.alert(
       "Logout",
       "Are you sure you want to log out?",
       [
         {
-          text: "cancel",
+          text: "Cancel",
           style: "cancel",
         },
         {
-          text: "yes",
+          text: "Yes",
           onPress: () => {
             dispatch(logout()); // Déclenche la déconnexion
             navigation.replace("TabNavigator", { screen: "LoginScreen" });
@@ -48,7 +72,6 @@ function SidebarNav() {
     );
   };
 
-  // Éléments de navigation pour le freelance
   const freelancerNavItems = [
     { name: "Profile", route: "Profile", icon: "person-outline" },
     { name: "List Of Offers", route: "ListOfOffers", icon: "briefcase-outline" },
@@ -59,7 +82,6 @@ function SidebarNav() {
     { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout },
   ];
 
-  // Éléments de navigation pour le client
   const clientNavItems = [
     { name: "Profil Client", route: "ProfilClient", icon: "person-outline" },
     { name: "Invoices", route: "Invoices", icon: "cash-outline" },
@@ -67,13 +89,11 @@ function SidebarNav() {
     { name: "Claim", route: "Claim", icon: "library-outline" },
     { name: "Project List", route: "ProjectList", icon: "list-outline" },
     { name: "Inbox", route: "Inbox", icon: "mail-outline" },
-    { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout }, // Ajouter la fonction de déconnexion
+    { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout },
   ];
 
-  // Définition des éléments en fonction du rôle
   const navItems = userRole === "freelancer" ? freelancerNavItems : clientNavItems;
 
-  // Appel API pour mettre à jour les données de l'écran d'accueil
   useEffect(() => {
     const updateAccueilScreenData = async () => {
       if (token && user?.id) {
@@ -98,17 +118,16 @@ function SidebarNav() {
     updateAccueilScreenData();
   }, [user?.id, token]);
 
-  // Fonction pour rendre les éléments de navigation
   const renderNavItem = (item) => (
     <TouchableOpacity
       key={item.route}
       style={styles.navItem}
       onPress={() => {
-        setIsSidebarVisible(false); // Ferme la barre après navigation
-        item.onPress ? item.onPress() : navigation.navigate(item.route); // Si une fonction de logout existe, l'exécuter
+        setIsSidebarVisible(false);
+        item.onPress ? item.onPress() : navigation.navigate(item.route);
       }}
     >
-      <Ionicons name={item.icon} size={24} color={styles.icon.color} style={styles.icon} />
+      <Ionicons name={item.icon} size={24} color="#FFF" style={styles.icon} />
       <Text style={styles.navText}>{item.name}</Text>
     </TouchableOpacity>
   );
@@ -117,200 +136,294 @@ function SidebarNav() {
     <ImageBackground
       source={require("./assets/images/acc.jpg")}
       style={styles.imageBackground}
+      resizeMode="cover"
     >
       <View style={styles.mainContainer}>
-        {/* Affichage du titre et de l'icône uniquement pour le client */}
-        {userRole === "client" && (
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <FontAwesome5 name="laptop-code" size={35} style={styles.headerIcon} />
-              <Text style={styles.headerText}>Freelancy</Text>
-            </View>
-          </View>
-        )}
-
+        {/* En-tête global en haut de l'écran */}
+        <View style={styles.globalHeader}>
+          <FontAwesome5 name="laptop-code" size={28} style={styles.globalHeaderIcon} />
+          <Text style={styles.globalHeaderTitle}>Freelancy</Text>
+        </View>
+  
         {/* Bouton pour afficher/masquer la barre latérale */}
-        {userRole === "client" && (
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => setIsSidebarVisible(!isSidebarVisible)}
-          >
-            <Ionicons name="menu" size={28} color="#ADE1FB" />
-          </TouchableOpacity>
-        )}
-
-        {/* Overlay pour fermer la barre latérale */}
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => setIsSidebarVisible(!isSidebarVisible)}
+        >
+          <FontAwesome5 name="bars" size={28} color="#ADE1FB" />
+        </TouchableOpacity>
+  
+        {/* Overlay lorsque la barre latérale est visible */}
         {isSidebarVisible && (
           <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)}>
             <View style={styles.overlay} />
           </TouchableWithoutFeedback>
         )}
-
+  
         {/* Barre latérale */}
-        {userRole === "client" && isSidebarVisible && (
+        {isSidebarVisible && (
           <View style={styles.sidebar}>
             <View style={styles.sidebarHeader}>
-            <FontAwesome5 name="laptop-code" size={28}style={styles.headerIcon} />
-            <Text style={styles.sidebarTitle}>Freelancy</Text>
+              <FontAwesome5 name="laptop-code" size={28} style={styles.headerIcon} />
+              <Text style={styles.sidebarTitle}>Freelancy</Text>
             </View>
-
             <ScrollView contentContainerStyle={styles.scrollContainer}>
               {navItems.map(renderNavItem)}
             </ScrollView>
-            {/* Bouton de fermeture */}
             <TouchableOpacity
-  style={styles.closeButton}
-  onPress={() => setIsSidebarVisible(false)}
->
-  <Text style={{ fontSize:40,color: 'white' }}>&larr;</Text>
-</TouchableOpacity>
+              style={styles.closeButton}
+              onPress={() => setIsSidebarVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>&larr;</Text>
+            </TouchableOpacity>
           </View>
         )}
-
+  
         {/* Contenu principal */}
-        <View style={styles.content}>
-          {userRole === "freelancer" ? (
-            <View style={styles.freelancerContainer}>
-              {freelancerNavItems.map(renderNavItem)}
-            </View>
-          ) : (
-            <Text style={styles.welcomeText}>Chercher un freelancer ?</Text>
-          )}
+<View style={styles.content}>
+  {userRole === "freelancer" ? (
+    <View style={styles.roleContent}>
+      <Text style={styles.roleTitle}>Bienvenue, Freelancer !</Text>
+      <Text style={styles.roleText}>
+        Ici, vous pouvez gérer vos offres, projets, et consulter vos factures.
+      </Text>
+    </View>
+  ) : userRole === "client" ? (
+    <View style={styles.roleContent}>
+      <Text style={styles.roleTitle}>Welcome, Client! </Text>
+      <Text style={[styles.roleText, { marginBottom: 20 }]}>
+      Are you looking for a freelancer for your project? Here, you can post your project and connect with the perfect freelancer to meet your needs.
+      </Text>
+      {/* Bouton pour afficher le formulaire */}
+      <Button
+        title="Publish a Project"
+        onPress={() => setShowForm(true)}
+        color="#041D56"
+      />
+
+      {/* Modal pour afficher le formulaire */}
+      <Modal
+        visible={showForm}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowForm(false)} // Permet de fermer le modal en appuyant en dehors
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.formContainer}>
+            <Text style={styles.formTitle}>Post Your Project</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Project Title"
+              value={projectTitle}
+              onChangeText={setProjectTitle}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Project Description"
+              value={projectDescription}
+              onChangeText={setProjectDescription}
+              multiline
+              numberOfLines={4}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Budget"
+              keyboardType="numeric"
+              value={projectBudget}
+              onChangeText={setProjectBudget}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Project Deadline (e.g., 30 days)"
+              value={projectDeadline}
+              onChangeText={setProjectDeadline}
+            />
+
+            <Button
+              title="Submit Project"
+              onPress={handlePublishProject}
+              color= "#0F2573"
+
+            />
+            <Button
+              title="Close"
+              onPress={() => setShowForm(false)}
+              color= "#01082D"
+            />
+          </View>
         </View>
+      </Modal>
+    </View>
+  ) : (
+    <Text style={styles.roleText}>
+      Rôle inconnu. Veuillez contacter l'assistance.
+    </Text>
+  )}
+</View>
+
       </View>
     </ImageBackground>
   );
+  
 }
 
 const styles = StyleSheet.create({
-  imageBackground: {
-    flex: 1,
-    resizeMode: "cover",
+  globalHeader: {
+    flexDirection: "column", // Placer l'icône au-dessus du texte
+    alignItems: "center",
+    marginTop: 40, // Ajuster l'espacement
+    marginBottom: 20,
+  },
+  globalHeaderIcon: {
+    color: "#266CA9",
+    marginBottom: 5, // Espace entre l'icône et le texte
+  },
+  globalHeaderTitle: {
+    color: "#266CA9",
+    fontSize: 20,
+    fontWeight: "bold",
   },
   mainContainer: {
     flex: 1,
-    flexDirection: "row",
-  },
-  header: {
-    alignItems: "center",
-    justifyContent: "center", // Centrer horizontalement
-    marginVertical: 15,
-    position: "absolute", // Permet d'afficher en haut
-    top: 20, // Distance depuis le haut de l'écran
-    width: "100%", // S'assurer que le conteneur prend toute la largeur
-  },
-  headerContent: {
-    flexDirection: "column", // Aligner l'icône et le texte verticalement
-    alignItems: "center", // Centrer horizontalement
-    justifyContent: "center",
-  },
-  headerIcon: {
-    color: "#266CA9",
-    marginBottom: -8, // Réduire l'espace entre l'icône et le texte
-  },
-  headerText: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#266CA9",
-    marginTop: 10,
+    position: "relative",
   },
   menuButton: {
     position: "absolute",
-    top: 60,
-    left: 10,
-    borderRadius: 20,
-    padding: 10,
-    zIndex: 1,
+    top: 40,
+    left: 20,
+    zIndex: 10,
   },
   sidebar: {
-    width: 200,
-    backgroundColor: "#ADE1FB",
-    borderRightWidth: 1,
-    borderRightColor: "#ddd",
-    paddingTop: 60,//lace légèrement les éléments vers le haut
     position: "absolute",
+    top:20,
     left: 0,
-    top: 0,
-    bottom: 0,
-    zIndex: 2,
+    width:150,
+    height: "100%",
+    backgroundColor: "#ADE1FB",
+    paddingVertical: 20,
+    zIndex: 20,
+    paddingTop:30,//outer de l'espace pour l'icône du menu
   },
-  scrollContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 150,
+  
+  sidebarIcon: {
+    color: "#266CA9",// de l'icône du menu
+    marginLeft: 20,
+    marginBottom:50,//spacement après l'icône du menu
   },
-  content: {
-    flex: 1,
-    justifyContent: "center",
+  
+  sidebarHeader: {
+    flexDirection: "column", // Placer l'icône et le texte en colonne
     alignItems: "center",
-    paddingHorizontal: 2,
+    marginBottom: 50,
+  },
+  
+  headerIcon: {
+    color: "#266CA9",//r de l'icône
+    marginBottom: 2,// Espacement entre l'icône et le texte
+  },
+  
+  sidebarTitle: {
+    color: "#266CA9",// du texte
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  
+  navItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#444",
+  },
+  navText: {
+    marginLeft: 15,
+    color: "#FFF",
+    fontSize: 16,
   },
   overlay: {
     position: "absolute",
     top: 0,
-    bottom: 0,
     left: 0,
-    right: 0,
+    width: "100%",
+    height: "100%",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    zIndex: 1,
+    zIndex: 10,
   },
   closeButton: {
     position: "absolute",
-    top:-15,
-    right:-20,
-    borderRadius: 20,
-    padding: 15,
+    bottom: 20,
+    right: 20,
   },
-  welcomeText: {
-    fontSize: 24,
+  closeButton: {
+    position: "absolute",
+    top:0, // Positionne la flèche en haut de la barre latérale
+    right: 10, // Aligne la flèche à droite
+    zIndex: 20, // Assure que la flèche est visible
+  },
+  closeButtonText: {
+    fontSize: 20,// Augmente la taille de la flèche
+    color: "#FFF", // Change la couleur en blanc
+    fontWeight: "bold", // Ajoute un style gras pour une meilleure visibilité
+  },
+  imageBackground: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  roleContent: {
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+    margin: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  roleTitle: {
+    fontSize: 18,
     fontWeight: "bold",
-    textAlign: "center",
-    color: "#fff",
+    color:"#041D56",
+    marginBottom: 2,
   },
-  freelancerContainer: {
+  roleText: {
+    fontSize: 14,
+    color: "#266CA9",
+    lineHeight: 22,
+  },
+  modalOverlay: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    width: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond sombre derrière le modal
   },
-  navItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    width: "90%",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    marginBottom: 10,
-    backgroundColor: "#f8f9fa",
+  formContainer: {
+    width: "80%",
+    padding: 20,
+    backgroundColor: "#fff",
     borderRadius: 8,
-    elevation: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  icon: {
-    marginRight: 5,
-    color: "#266CA9",
-  },
-  navText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#266CA9",
-    textAlign: "left",
-  },
-  sidebarHeader: {
-    alignItems: "center", // Centre l'icône et le titre dans la barre latérale
-    marginBottom: -15,
-  },
-  sidebarTitle: {
+  formTitle: {
     fontSize: 20,
-    fontWeight: "bold", // Poids du texte
-    color: "#266CA9", // Couleur bleue
-   //etterSpacing: 2, // Espacement entre les lettres
-    //xtTransform: "uppercase", // Texte en majuscules
-    fontFamily: "Borsok", // Police Borsok
-    marginTop: 10, // Ajuste la position verticale du titre
+    fontWeight: "bold",
+    color: "#266CA9",
+    marginBottom: 15,
   },
-  sidebarIcon: {
-    color: "#266CA9", // Couleur de l'icône
-    marginBottom: 5, // Espace entre l'icône et le titre
-  },
-  
+  input: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 4,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    fontSize: 16,
+  }
 });
 
 export default SidebarNav;
