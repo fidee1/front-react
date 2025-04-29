@@ -4,7 +4,7 @@ import { ImageBackground, StyleSheet } from 'react-native';
 const SplashScreen = () => {
   return (
     <ImageBackground
-      source={require('./assets/images/splash.png')}
+      source={require('./assets/images/splash.jpg')}
       style={styles.background}
     />
   );

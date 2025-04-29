@@ -12,6 +12,8 @@ import {
   Button,
   TextInput,
   Modal,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
@@ -25,7 +27,18 @@ function SidebarNav() {
   const [projectDescription, setProjectDescription] = useState("");
   const [projectBudget, setProjectBudget] = useState("");
   const [projectDeadline, setProjectDeadline] = useState("");
-
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [skills, setSkills] = useState("");
+  const [budgetRange, setBudgetRange] = useState("");
+  const [projectsCount, setProjectsCount] = useState("");
+  // Fonction pour gérer le filtrage
+  const handleFilter = () => {
+    console.log("Skills:", skills);
+    console.log("Budget Range:", budgetRange);
+    console.log("Projects Count:", projectsCount);
+    setShowFilterModal(false); // Fermer la modal après le filtrage
+  };
+  
   // Fonction pour publier le projet
   const handlePublishProject = () => {
     if (!projectTitle || !projectDescription || !projectBudget || !projectDeadline) {
@@ -179,7 +192,7 @@ function SidebarNav() {
           </View>
         )}
   
-        {/* Contenu principal */}
+      {/* Contenu principal */}
 <View style={styles.content}>
   {userRole === "freelancer" ? (
     <View style={styles.roleContent}>
@@ -189,72 +202,136 @@ function SidebarNav() {
       </Text>
     </View>
   ) : userRole === "client" ? (
-    <View style={styles.roleContent}>
-      <Text style={styles.roleTitle}>Welcome, Client! </Text>
-      <Text style={[styles.roleText, { marginBottom: 20 }]}>
-      Are you looking for a freelancer for your project? Here, you can post your project and connect with the perfect freelancer to meet your needs.
-      </Text>
-      {/* Bouton pour afficher le formulaire */}
-      <Button
-        title="Publish a Project"
-        onPress={() => setShowForm(true)}
-        color="#041D56"
-      />
+    <>
+      <View style={styles.roleContent}>
+        <Text style={styles.roleTitle}>Welcome, Client! </Text>
+        <Text style={[styles.roleText, { marginBottom: 20 }]}>
+          Are you looking for a freelancer for your project? Here, you can post
+          your project and connect with the perfect freelancer to meet your
+          needs.
+        </Text>
+        {/* Bouton pour afficher le formulaire */}
+        <Button
+          title="Publish a Project"
+          onPress={() => setShowForm(true)}
+          color="#041D56"
+        />
 
-      {/* Modal pour afficher le formulaire */}
+        {/* Modal pour afficher le formulaire */}
+        <Modal
+          visible={showForm}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowForm(false)} // Permet de fermer le modal en appuyant en dehors
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.formContainer}>
+              <Text style={styles.formTitle}>Post Your Project</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Project Title"
+                value={projectTitle}
+                onChangeText={setProjectTitle}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Project Description"
+                value={projectDescription}
+                onChangeText={setProjectDescription}
+                multiline
+                numberOfLines={4}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Budget"
+                keyboardType="numeric"
+                value={projectBudget}
+                onChangeText={setProjectBudget}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Project Deadline (e.g., 30 days)"
+                value={projectDeadline}
+                onChangeText={setProjectDeadline}
+              />
+
+              <Button
+                title="Submit Project"
+                onPress={handlePublishProject}
+                color="#0F2573"
+              />
+              <Button
+                title="Close"
+                onPress={() => setShowForm(false)}
+                color="#01082D"
+              />
+            </View>
+          </View>
+        </Modal>
+      </View>
+      {/* Deuxième section : Zone de filtrage */}
+      <View style={styles.roleContent}>
+        <Text style={styles.roleTitle}>Filter Freelancers</Text>
+        <Text style={[styles.roleText, { marginBottom: 20 }]}>
+          Use the filters below to narrow down your search for the perfect
+          freelancer.
+        </Text>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={() => setShowFilterModal(true)}
+        >
+          <Text style={styles.filterButtonText}>Open Filter Options</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Modal pour le formulaire de filtrage */}
       <Modal
-        visible={showForm}
-        animationType="slide"
+        visible={showFilterModal}
         transparent={true}
-        onRequestClose={() => setShowForm(false)} // Permet de fermer le modal en appuyant en dehors
+        animationType="slide"
+        onRequestClose={() => setShowFilterModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.formContainer}>
-            <Text style={styles.formTitle}>Post Your Project</Text>
-
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Filter Freelancers</Text>
             <TextInput
               style={styles.input}
-              placeholder="Project Title"
-              value={projectTitle}
-              onChangeText={setProjectTitle}
+              placeholder="Skills (e.g., React, Laravel)"
+              value={skills}
+              onChangeText={setSkills}
             />
             <TextInput
               style={styles.input}
-              placeholder="Project Description"
-              value={projectDescription}
-              onChangeText={setProjectDescription}
-              multiline
-              numberOfLines={4}
+              placeholder="Budget Range (e.g., $500-$1000)"
+              value={budgetRange}
+              onChangeText={setBudgetRange}
             />
             <TextInput
               style={styles.input}
-              placeholder="Budget"
+              placeholder="Number of Projects (e.g., >5)"
               keyboardType="numeric"
-              value={projectBudget}
-              onChangeText={setProjectBudget}
+              value={projectsCount}
+              onChangeText={setProjectsCount}
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Project Deadline (e.g., 30 days)"
-              value={projectDeadline}
-              onChangeText={setProjectDeadline}
-            />
+            <View style={styles.buttonGroup}>
+              <Button
+                title="Filter"
+                onPress={handleFilter}
+                color= "#041D56"
 
-            <Button
-              title="Submit Project"
-              onPress={handlePublishProject}
-              color= "#0F2573"
-
-            />
-            <Button
-              title="Close"
-              onPress={() => setShowForm(false)}
-              color= "#01082D"
-            />
+              />
+              <Button
+                title="Close"
+                onPress={() => setShowFilterModal(false)}
+                color="#01082D"
+              />
+            </View>
           </View>
         </View>
       </Modal>
-    </View>
+      
+    </>
   ) : (
     <Text style={styles.roleText}>
       Rôle inconnu. Veuillez contacter l'assistance.
@@ -394,9 +471,9 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond sombre derrière le modal
+    justifyContent: "center", // Centre verticalement
+    alignItems: "center", // Centre horizontalement
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond sombre
   },
   formContainer: {
     width: "80%",
@@ -408,12 +485,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
+    alignSelf: "center", // S'assure que le modal reste centré
   },
   formTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#266CA9",
     marginBottom: 15,
+    textAlign: "center", // Centre le titre
   },
   input: {
     height: 40,
@@ -423,7 +502,103 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 10,
     fontSize: 16,
-  }
+  },
+  container: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "#f5f5f5",
+  },
+  roleContent: {
+    backgroundColor: "#f5f5f5",
+    padding: 20,
+    margin: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  roleTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#266CA9",
+    marginBottom: 10,
+  },
+  roleText: {
+    fontSize: 16,
+    color: "#555",
+    lineHeight: 22,
+  },
+  filterButton: {
+    backgroundColor: "#041D56",
+    padding: 8,
+    borderRadius: 0,
+    alignItems: "center",
+  },
+  filterButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    margin: 20,
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#266CA9",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  input: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 4,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    fontSize: 16,
+  },
+  buttonGroup: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  freelancerItem: {
+    backgroundColor: '#fff',
+    padding: 10,
+    marginVertical: 8,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  freelancerName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#041D56',
+  },
+  freelancerSkills: {
+    fontSize: 14,
+    color: '#555',
+  },
+  
 });
 
 export default SidebarNav;

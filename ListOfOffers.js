@@ -1,240 +1,197 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
-  Modal,
-  Button,
-} from "react-native";
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
+import { DataTable, Card } from 'react-native-paper';
 
-const offers = [
-  {
-    id: "1",
-    title: "Web Development Project",
-    description: "A challenging web development project using React Native.",
-    state: "Open",
-  },
-  {
-    id: "2",
-    title: "Mobile App Development",
-    description: "Create a mobile app for a healthcare startup.",
-    state: "Closed",
-  },
-];
+const ListOfOffers = () => {
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
-export default function ListOfOffers() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filteredOffers, setFilteredOffers] = useState(offers);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedOffer, setSelectedOffer] = useState(null);
-  const [motivationText, setMotivationText] = useState("");
+  const offers = [
+    { title: 'Develop a Task Management System', category: 'Software Engineering', budget: '4000', deadline: '2025-05-20' },
+    { title: 'Create a Machine Learning Model', category: 'Artificial Intelligence', budget: '5300', deadline: '2025-05-18' },
+    { title: 'Build a Secure API with Laravel', category: 'Backend Development', budget: '3400', deadline: '2025-05-22' },
+    { title: 'Web Scraping Bot for Market Data', category: 'Data Science', budget: '2700', deadline: '2025-05-25' },
+  ];
 
-  const handleSearch = (text) => {
-    setSearchQuery(text);
-    const filtered = offers.filter((offer) =>
-      offer.title.toLowerCase().includes(text.toLowerCase())
-    );
-    setFilteredOffers(filtered);
+  const handleAction = (offerTitle, action) => {
+    setAlertMessage(`You ${action} the project: ${offerTitle}`);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
   };
-
-  const openModal = (offer) => {
-    setSelectedOffer(offer);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    setSelectedOffer(null);
-    setMotivationText("");
-  };
-
-  const submitApplication = () => {
-    console.log("Motivation:", motivationText);
-    console.log("Applying for:", selectedOffer.title);
-    closeModal();
-  };
-
-  const renderOffer = ({ item }) => (
-    <View style={styles.offerCard}>
-      <View style={styles.cardHeader}>
-        <View>
-          <Text style={styles.title}>Title: {item.title}</Text>
-          <Text style={styles.description}>{item.description}</Text>
-        </View>
-        <View>
-          <Text
-            style={[
-              styles.badge,
-              item.state === "Open" ? styles.badgeOpen : styles.badgeClosed,
-            ]}
-          >
-            {item.state}
-          </Text>
-        </View>
-      </View>
-      <TouchableOpacity
-        style={styles.applyButton}
-        onPress={() => openModal(item)}
-      >
-        <Text style={styles.buttonText}>Apply</Text>
-      </TouchableOpacity>
-    </View>
-  );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>List of Offers</Text>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Search for projects..."
-        value={searchQuery}
-        onChangeText={handleSearch}
-      />
-      <FlatList
-        data={filteredOffers}
-        keyExtractor={(item) => item.id}
-        renderItem={renderOffer}
-        contentContainerStyle={styles.listContainer}
-      />
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              Apply for Project: {selectedOffer?.title}
-            </Text>
-            <TextInput
-              style={styles.textArea}
-              placeholder="Write your motivation here..."
-              value={motivationText}
-              onChangeText={setMotivationText}
-              multiline
-            />
-            <View style={styles.modalButtons}>
-              <Button title="Cancel" onPress={closeModal} color="#dc3545" />
-              <Button title="Submit" onPress={submitApplication} color="#0d6efd" />
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar backgroundColor="#0F2573" />
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Card style={styles.card}>
+          <Card.Title 
+            title="Available Projects for Freelancers" 
+            titleStyle={styles.cardTitle}
+            style={styles.cardHeader}
+          />
+          
+          <Card.Content style={styles.cardContent}>
+            {showAlert && (
+              <View style={styles.alert}>
+                <Text style={styles.alertText}>{alertMessage}</Text>
+              </View>
+            )}
+            
+            <DataTable style={styles.dataTable}>
+              <DataTable.Header style={styles.tableHeader}>
+                <DataTable.Title style={styles.headerCell}>#</DataTable.Title>
+                <DataTable.Title style={styles.headerCell}>Project</DataTable.Title>
+                <DataTable.Title numeric style={styles.headerCell}>Budget</DataTable.Title>
+                <DataTable.Title style={styles.headerCell}>Action</DataTable.Title>
+              </DataTable.Header>
+
+              {offers.map((offer, index) => (
+                <DataTable.Row key={index} style={styles.tableRow}>
+                  <DataTable.Cell style={styles.cell}>{index + 1}</DataTable.Cell>
+                  <DataTable.Cell style={styles.cell}>
+                    <View style={styles.projectInfo}>
+                      <Text style={styles.offerTitle} numberOfLines={2}>{offer.title}</Text>
+                      <View style={styles.categoryBadge}>
+                        <Text style={styles.offerCategory}>{offer.category}</Text>
+                      </View>
+                      <Text style={styles.offerDeadline}>⏱ {offer.deadline}</Text>
+                    </View>
+                  </DataTable.Cell>
+                  <DataTable.Cell numeric style={styles.cell}>{offer.budget} TND</DataTable.Cell>
+                  <DataTable.Cell style={styles.cell}>
+                    <View style={styles.buttonGroup}>
+                      <TouchableOpacity 
+                        style={[styles.button, styles.acceptButton]}
+                        onPress={() => handleAction(offer.title, 'accepted')}
+                      >
+                        <Text style={styles.buttonText}>✓ Accept</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.button, styles.rejectButton]}
+                        onPress={() => handleAction(offer.title, 'rejected')}
+                      >
+                        <Text style={styles.buttonText}>✗ Reject</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </DataTable.Cell>
+                </DataTable.Row>
+              ))}
+            </DataTable>
+          </Card.Content>
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#FFF',
   },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-    color: "#333",
-  },
-  searchInput: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
+  scrollContainer: {
     padding: 10,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    paddingTop: 60,
   },
-  listContainer: {
-    paddingBottom: 16,
-  },
-  offerCard: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
+  card: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#FFF',
+    marginBottom: 20,
   },
   cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    backgroundColor: '#0F2573',
+    paddingVertical: 16,
   },
-  title: {
+  cardTitle: {
+    color: 'white',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
+  },
+  cardContent: {
+    paddingHorizontal: 0,
+  },
+  dataTable: {
+    marginTop: 8,
+  },
+  tableHeader: {
+    backgroundColor: '#0F2573',
+    height: 40,
+  },
+  headerCell: {
+    justifyContent: 'center',
+  },
+  tableRow: {
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#BE95C4',
+    minHeight: 100,
+  },
+  cell: {
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+  },
+  projectInfo: {
+    flex: 1,
+  },
+  offerTitle: {
+    fontWeight: 'bold',
+    fontSize: 13,
     marginBottom: 4,
-    color: "#222",
   },
-  description: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 8,
+  categoryBadge: {
+    backgroundColor: '#0F2573',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
   },
-  badge: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    fontSize: 12,
-    fontWeight: "bold",
-    textAlign: "center",
+  offerCategory: {
+    color: 'white',
+    fontSize: 10,
   },
-  badgeOpen: {
-    backgroundColor: "#28a745",
-    color: "#fff",
+  offerDeadline: {
+    fontSize: 10,
+    color: '#666',
   },
-  badgeClosed: {
-    backgroundColor: "#dc3545",
-    color: "#fff",
+  buttonGroup: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    height: 80,
   },
-  applyButton: {
-    backgroundColor: "#0d6efd",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+  button: {
+    padding: 6,
+    borderRadius: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 80,
+  },
+  acceptButton: {
+    backgroundColor: '#4CAF50',
+  },
+  rejectButton: {
+    backgroundColor: '#F44336',
     marginTop: 8,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-    textAlign: "center",
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: "90%",
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    padding: 16,
-    elevation: 4,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-    color: "#333",
-  },
-  textArea: {
-    backgroundColor: "#f8f9fa",
-    borderRadius: 8,
+  alert: {
+    backgroundColor: '#4CAF50',
     padding: 10,
-    height: 100,
-    textAlignVertical: "top",
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderRadius: 4,
+    margin: 8,
     marginBottom: 16,
   },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+  alertText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });
+
+export default ListOfOffers;
