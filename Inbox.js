@@ -1,263 +1,541 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  FlatList, 
+  Image, 
+  StyleSheet, 
+  KeyboardAvoidingView, 
+  Platform,
+  Dimensions,
+  StatusBar
+} from 'react-native';
+
+const { width, height } = Dimensions.get('window');
 
 const Inbox = () => {
-  const palette = {
-    LIGHT_BLUE: "#ADE1FB",
-    MEDIUM_BLUE: "#266CA9", 
-    DARK_BLUE: "#0F2573",
-    DARKER_BLUE: "#041D56",
-    DARKEST_BLUE: "#01082D"
-  };
-
   const colors = {
-    primary: palette.MEDIUM_BLUE,
-    secondary: palette.DARK_BLUE,
-    accent: palette.LIGHT_BLUE,
-    dark: palette.DARKEST_BLUE,
-    light: "#FFFFFF",
-    background: "#FFFFFF",
+    primary: '#0084FF',
+    secondary: '#5AC8FA',
+    background: '#F0F1F2',
+    white: '#FFFFFF',
+    black: '#1C1C1E',
+    gray: '#8E8E93',
+    lightGray: '#E5E5EA',
+    messageSent: '#0084FF',
+    messageReceived: '#E4E6EB',
+    online: '#4CD964',
+    inputBackground: '#F2F2F2',
   };
 
-  const currentUser = 'You';
+  const currentUser = {
+    id: 'user1',
+    name: 'You',
+    avatar: 'https://i.pravatar.cc/150?img=1'
+  };
+
   const [chats, setChats] = useState([
-      {
-          id: 1,
-          name: 'Client - Sarah Smith',
-          avatar: 'https://i.pravatar.cc/150?img=5',
-          lastMessage: 'Great job on the project!',
-          lastMessageTime: 'Yesterday',
-          messages: [
-              { id: 1, sender: 'Sarah Smith', text: 'Looking forward to more work!', timestamp: 'Yesterday' },
-              { id: 2, sender: 'You', text: 'Thank you for the feedback!', timestamp: 'Yesterday' },
-          ],
-      },
+    {
+      id: '1',
+      name: 'Sarah Smith',
+      avatar: 'https://i.pravatar.cc/150?img=5',
+      lastMessage: 'Looking forward to more work!',
+      lastMessageTime: '10:30 AM',
+      unread: 2,
+      isOnline: true,
+      messages: [
+        { id: '1', sender: 'Sarah Smith', text: 'Hi there!', time: '10:20 AM' },
+        { id: '2', sender: 'You', text: 'Hello Sarah!', time: '10:25 AM' },
+        { id: '3', sender: 'Sarah Smith', text: 'Looking forward to more work!', time: '10:30 AM' },
+      ],
+    },
+    {
+      id: '2',
+      name: 'John Doe',
+      avatar: 'https://i.pravatar.cc/150?img=10',
+      lastMessage: 'Can we meet tomorrow?',
+      lastMessageTime: 'Yesterday',
+      unread: 0,
+      isOnline: false,
+      messages: [
+        { id: '1', sender: 'John Doe', text: 'Hello!', time: 'Yesterday' },
+        { id: '2', sender: 'You', text: 'Hi John!', time: 'Yesterday' },
+        { id: '3', sender: 'John Doe', text: 'Can we meet tomorrow?', time: 'Yesterday' },
+      ],
+    },
+    {
+      id: '3',
+      name: 'Emily Johnson',
+      avatar: 'https://i.pravatar.cc/150?img=15',
+      lastMessage: 'Thanks for your help!',
+      lastMessageTime: 'Monday',
+      unread: 0,
+      isOnline: true,
+      messages: [
+        { id: '1', sender: 'Emily Johnson', text: 'Hey!', time: 'Monday' },
+        { id: '2', sender: 'You', text: 'Hi Emily!', time: 'Monday' },
+        { id: '3', sender: 'Emily Johnson', text: 'Thanks for your help!', time: 'Monday' },
+      ],
+    },
   ]);
+
   const [selectedChat, setSelectedChat] = useState(null);
   const [newMessage, setNewMessage] = useState('');
+  const [showChatList, setShowChatList] = useState(true);
+  const flatListRef = useRef();
+
+  useEffect(() => {
+    if (selectedChat && flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [selectedChat?.messages]);
 
   const selectChat = (chat) => {
-      setSelectedChat(chat);
-      setNewMessage('');
+    // Mark as read
+    const updatedChats = chats.map(c => {
+      if (c.id === chat.id) {
+        return { ...c, unread: 0 };
+      }
+      return c;
+    });
+    setChats(updatedChats);
+    setSelectedChat({ ...chat, unread: 0 });
+    setShowChatList(false);
+    setNewMessage('');
   };
 
   const sendMessage = () => {
-      if (newMessage.trim() !== '') {
-          const updatedChats = chats.map((chat) => {
-              if (chat.id === selectedChat.id) {
-                  return {
-                      ...chat,
-                      messages: [
-                          ...chat.messages,
-                          {
-                              id: Date.now(),
-                              sender: currentUser,
-                              text: newMessage,
-                              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                          },
-                      ],
-                      lastMessage: newMessage,
-                      lastMessageTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                  };
-              }
-              return chat;
-          });
-          setChats(updatedChats);
-          setNewMessage('');
+    if (newMessage.trim() === '') return;
+
+    const updatedChats = chats.map(chat => {
+      if (chat.id === selectedChat.id) {
+        const newMsg = {
+          id: Date.now().toString(),
+          sender: currentUser.name,
+          text: newMessage,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        };
+
+        return {
+          ...chat,
+          messages: [...chat.messages, newMsg],
+          lastMessage: newMessage,
+          lastMessageTime: 'Just now',
+        };
       }
+      return chat;
+    });
+
+    setChats(updatedChats);
+    setSelectedChat(prev => ({
+      ...prev,
+      messages: [...prev.messages, {
+        id: Date.now().toString(),
+        sender: currentUser.name,
+        text: newMessage,
+        time: 'Just now',
+      }],
+      lastMessage: newMessage,
+      lastMessageTime: 'Just now',
+    }));
+    setNewMessage('');
+  };
+
+  const goBackToList = () => {
+    setShowChatList(true);
+    setSelectedChat(null);
   };
 
   return (
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <View style={[styles.sidebar, { backgroundColor: colors.primary }]}>
-              <Text style={[styles.header, { color: colors.light }]}>Messages</Text>
-              <FlatList
-                  data={chats}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={({ item }) => (
-                      <TouchableOpacity
-                          style={[styles.chatItem, selectedChat?.id === item.id && styles.chatItemSelected]}
-                          onPress={() => selectChat(item)}
-                      >
-                          <Image source={{ uri: item.avatar }} style={styles.avatar} />
-                          <View style={styles.chatInfo}>
-                              <Text style={[styles.chatName, { color: colors.light }]}>{item.name}</Text>
-                              <Text style={[styles.chatPreview, { color: colors.light }]}>{item.lastMessage}</Text>
-                          </View>
-                      </TouchableOpacity>
-                  )}
-              />
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      
+      {showChatList ? (
+        <View style={styles.chatListContainer}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Chats</Text>
+            <TouchableOpacity style={styles.newChatButton}>
+              <Text style={styles.newChatButtonText}>✏️</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={[styles.chatContent, { backgroundColor: colors.light }]}>
-              {selectedChat ? (
-                  <>
-                      <View style={styles.chatHeader}>
-                          <Image source={{ uri: selectedChat.avatar }} style={styles.headerAvatar} />
-                          <Text style={[styles.headerName, { color: colors.dark }]}>{selectedChat.name}</Text>
-                      </View>
-                      <FlatList
-                          data={selectedChat.messages}
-                          keyExtractor={(item) => item.id.toString()}
-                          style={styles.messagesContainer}
-                          renderItem={({ item }) => (
-                              <View
-                                  style={[
-                                      styles.messageBubble,
-                                      item.sender === currentUser ? styles.sent : styles.received,
-                                      { backgroundColor: item.sender === currentUser ? colors.primary : '#e0e0e0' },
-                                  ]}
-                              >
-                                  <Text style={[styles.messageText, { color: colors.light }]}>{item.text}</Text>
-                                  <Text style={styles.messageTime}>{item.timestamp}</Text>
-                              </View>
-                          )}
-                      />
-                      <View style={styles.inputContainer}>
-                          <TextInput
-                              style={[styles.input, { backgroundColor: '#e0e0e0', color: colors.dark }]}
-                              placeholder="Type a message..."
-                              value={newMessage}
-                              onChangeText={setNewMessage}
-                              onSubmitEditing={sendMessage}
-                          />
-                          <TouchableOpacity style={[styles.sendButton, { backgroundColor: colors.secondary }]} onPress={sendMessage}>
-                              <Text style={styles.sendButtonText}>Send</Text>
-                          </TouchableOpacity>
-                      </View>
-                  </>
-              ) : (
-                  <View style={styles.emptyChat}>
-                      <Text style={[styles.emptyChatText, { color: colors.dark }]}>Select a conversation</Text>
-                  </View>
-              )}
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search"
+              placeholderTextColor={colors.gray}
+            />
           </View>
-      </View>
+
+          <FlatList
+            data={chats}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.chatItem}
+                onPress={() => selectChat(item)}
+              >
+                <View style={styles.avatarContainer}>
+                  <Image source={{ uri: item.avatar }} style={styles.avatar} />
+                  {item.isOnline && <View style={styles.onlineIndicator} />}
+                </View>
+                
+                <View style={styles.chatInfo}>
+                  <View style={styles.chatInfoTop}>
+                    <Text style={styles.chatName}>{item.name}</Text>
+                    <Text style={styles.chatTime}>{item.lastMessageTime}</Text>
+                  </View>
+                  <View style={styles.chatInfoBottom}>
+                    <Text 
+                      style={[
+                        styles.lastMessage,
+                        item.unread > 0 && styles.unreadMessage
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.lastMessage}
+                    </Text>
+                    {item.unread > 0 && (
+                      <View style={styles.unreadBadge}>
+                        <Text style={styles.unreadBadgeText}>{item.unread}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      ) : (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.chatContainer}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        >
+          <View style={styles.chatHeader}>
+            <TouchableOpacity onPress={goBackToList} style={styles.backButton}>
+              <Text style={styles.backButtonText}>‹</Text>
+            </TouchableOpacity>
+            
+            <View style={styles.chatHeaderUser}>
+              <View style={styles.avatarContainer}>
+                <Image source={{ uri: selectedChat.avatar }} style={styles.chatAvatar} />
+                {selectedChat.isOnline && <View style={styles.onlineIndicator} />}
+              </View>
+              <Text style={styles.chatHeaderName}>{selectedChat.name}</Text>
+            </View>
+            
+            <TouchableOpacity style={styles.chatHeaderButton}>
+              <Text style={styles.chatHeaderButtonText}>⋮</Text>
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            ref={flatListRef}
+            data={selectedChat.messages}
+            keyExtractor={item => item.id}
+            contentContainerStyle={styles.messagesContainer}
+            renderItem={({ item }) => (
+              <View
+                style={[
+                  styles.messageContainer,
+                  item.sender === currentUser.name ? styles.sentContainer : styles.receivedContainer,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.messageBubble,
+                    item.sender === currentUser.name 
+                      ? { backgroundColor: colors.messageSent } 
+                      : { backgroundColor: colors.messageReceived },
+                  ]}
+                >
+                  <Text 
+                    style={[
+                      styles.messageText,
+                      item.sender === currentUser.name 
+                        ? { color: colors.white } 
+                        : { color: colors.black },
+                    ]}
+                  >
+                    {item.text}
+                  </Text>
+                  <Text 
+                    style={[
+                      styles.messageTime,
+                      item.sender === currentUser.name 
+                        ? { color: colors.white } 
+                        : { color: colors.gray },
+                    ]}
+                  >
+                    {item.time}
+                  </Text>
+                </View>
+              </View>
+            )}
+          />
+
+          <View style={styles.inputContainer}>
+            <TouchableOpacity style={styles.attachmentButton}>
+              <Text style={styles.attachmentButtonText}>+</Text>
+            </TouchableOpacity>
+            
+            <TextInput
+              style={styles.messageInput}
+              placeholder="Message"
+              placeholderTextColor={colors.gray}
+              value={newMessage}
+              onChangeText={setNewMessage}
+              multiline
+            />
+            
+            <TouchableOpacity 
+              style={styles.sendButton} 
+              onPress={sendMessage}
+              disabled={!newMessage.trim()}
+            >
+              <Text style={[
+                styles.sendButtonText,
+                { color: newMessage.trim() ? colors.primary : colors.gray }
+              ]}>
+                Send
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      )}
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-      flex: 1,
-      flexDirection: 'row',
+    flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  sidebar: {
-      flex: 1,
-      padding: 15,
-      borderRightWidth: 1,
-      borderRightColor: '#e0e0e0',
+  chatListContainer: {
+    flex: 1,
   },
   header: {
-      fontSize: 24,
-      marginBottom: 20,
-      fontWeight: 'bold',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 15 : 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  newChatButton: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  newChatButtonText: {
+    fontSize: 20,
+  },
+  searchContainer: {
+    padding: 15,
+    paddingTop: 10,
+    paddingBottom: 10,
+  },
+  searchInput: {
+    height: 36,
+    backgroundColor: '#F2F2F2',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    fontSize: 16,
   },
   chatItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 15,
-      borderRadius: 10,
-      marginBottom: 15,
-      backgroundColor: '#FFFFFF',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
   },
-  chatItemSelected: {
-      backgroundColor: '#f0f0f0',
+  avatarContainer: {
+    position: 'relative',
+    marginRight: 12,
   },
   avatar: {
-      width: 50,
-      height: 50,
-      borderRadius: 25,
-      marginRight: 15,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  chatAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  onlineIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#4CD964',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
   },
   chatInfo: {
-      flex: 1,
+    flex: 1,
+  },
+  chatInfoTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   chatName: {
-      fontSize: 18,
-      fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#000000',
   },
-  chatPreview: {
-      fontSize: 14,
+  chatTime: {
+    fontSize: 13,
+    color: '#8E8E93',
   },
-  chatContent: {
-      flex: 2,
-      padding: 15,
+  chatInfoBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  lastMessage: {
+    fontSize: 15,
+    color: '#8E8E93',
+    flex: 1,
+    marginRight: 8,
+  },
+  unreadMessage: {
+    color: '#000000',
+    fontWeight: '600',
+  },
+  unreadBadge: {
+    backgroundColor: '#0084FF',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+  },
+  unreadBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  chatContainer: {
+    flex: 1,
   },
   chatHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 20,
-      borderBottomWidth: 1,
-      borderBottomColor: '#e0e0e0',
-      paddingBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight + 15 : 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5EA',
   },
-  headerAvatar: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      marginRight: 15,
+  backButton: {
+    marginRight: 15,
   },
-  headerName: {
-      fontSize: 20,
-      fontWeight: 'bold',
+  backButtonText: {
+    fontSize: 24,
+  },
+  chatHeaderUser: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  chatHeaderName: {
+    fontSize: 17,
+    fontWeight: '600',
+    marginLeft: 12,
+  },
+  chatHeaderButton: {
+    width: 30,
+    height: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chatHeaderButtonText: {
+    fontSize: 20,
   },
   messagesContainer: {
-      flex: 1,
-      marginBottom: 10,
+    padding: 15,
+    paddingBottom: 10,
+  },
+  messageContainer: {
+    marginBottom: 10,
+    maxWidth: '80%',
+  },
+  sentContainer: {
+    alignSelf: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  receivedContainer: {
+    alignSelf: 'flex-start',
+    alignItems: 'flex-start',
   },
   messageBubble: {
-      padding: 12,
-      borderRadius: 15,
-      marginBottom: 15,
-      maxWidth: '80%',
-  },
-  sent: {
-      alignSelf: 'flex-end',
-  },
-  received: {
-      alignSelf: 'flex-start',
+    padding: 12,
+    borderRadius: 18,
   },
   messageText: {
-      fontSize: 16,
+    fontSize: 16,
+    lineHeight: 20,
   },
   messageTime: {
-      fontSize: 12,
-      color: '#A3A3A3',
-      textAlign: 'right',
-      marginTop: 5,
+    fontSize: 12,
+    marginTop: 4,
+    opacity: 0.8,
   },
   inputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E5EA',
+    backgroundColor: '#FFFFFF',
   },
-  input: {
-      flex: 1,
-      borderRadius: 25,
-      paddingHorizontal: 18,
-      fontSize: 16,
+  attachmentButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F2F2F2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  attachmentButtonText: {
+    fontSize: 20,
+    color: '#000000',
+  },
+  messageInput: {
+    flex: 1,
+    minHeight: 40,
+    maxHeight: 120,
+    backgroundColor: '#F2F2F2',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    fontSize: 16,
   },
   sendButton: {
-      borderRadius: 25,
-      marginLeft: 15,
-      paddingHorizontal: 25,
-      paddingVertical: 12,
+    marginLeft: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   sendButtonText: {
-      color: '#FFFFFF',
-      fontSize: 16,
-  },
-  emptyChat: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-  },
-  emptyChatText: {
-      fontSize: 18,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

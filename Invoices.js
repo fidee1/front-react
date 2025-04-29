@@ -1,218 +1,204 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  FlatList,
-  SafeAreaView,
-  StatusBar
-} from 'react-native';
-import { Card, Badge, Button } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { Card, Button } from 'react-native-elements';
 
-const palette = {
-  LIGHT_BLUE: "#ADE1FB",
-  MEDIUM_BLUE: "#266CA9", 
-  DARK_BLUE: "#0F2573",
-  DARKER_BLUE: "#041D56",
-  DARKEST_BLUE: "#01082D"
-};
+const Invoices = () => {
+  const [paymentMethods, setPaymentMethods] = useState([
+    { type: 'Visa', last4: '4242', expiry: '12/26', amount: 150.0 },
+    { type: 'MasterCard', last4: '1234', expiry: '09/25', amount: 75.5 }
+  ]);
 
-const colors = {
-  primary: palette.MEDIUM_BLUE,
-  secondary: palette.DARK_BLUE,
-  accent: palette.LIGHT_BLUE,
-  dark: palette.DARKEST_BLUE,
-  light: "#FFFFFF",
-  background: "#FFFFFF",
-};
+  const [newMethod, setNewMethod] = useState({
+    type: '',
+    last4: '',
+    expiry: '',
+    amount: ''
+  });
 
-const invoices = [
-  { id: 'INV001', projectName: 'E-commerce Platform', date: '2025-04-01', amount: 150.00, status: 'Paid' },
-  { id: 'INV002', projectName: 'Portfolio Website', date: '2025-03-20', amount: 300.00, status: 'Pending' },
-  { id: 'INV003', projectName: 'Task Management App', date: '2025-02-15', amount: 200.00, status: 'Paid' },
-  { id: 'INV004', projectName: 'CRM System', date: '2025-01-10', amount: 450.00, status: 'Cancelled' },
-  { id: 'INV005', projectName: 'Mobile Application', date: '2024-12-05', amount: 175.50, status: 'Paid' },
-];
-
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('en-US', options);
-};
-
-const getStatusColor = (status) => {
-  const statusColors = {
-    'Paid': '#4CAF50', // green
-    'Pending': '#FFC107', // yellow
-    'Cancelled': '#F44336' // red
+  const addPaymentMethod = () => {
+    if (newMethod.type && newMethod.last4 && newMethod.expiry && newMethod.amount > 0) {
+      setPaymentMethods([...paymentMethods, { ...newMethod, amount: parseFloat(newMethod.amount) }]);
+      setNewMethod({ type: '', last4: '', expiry: '', amount: '' });
+    } else {
+      Alert.alert('Error', 'Please fill all fields with valid values');
+    }
   };
-  return statusColors[status] || '#9E9E9E'; // gray as default
-};
 
-const downloadInvoice = (invoice) => {
-  console.log(`Downloading invoice: ${invoice.id}`);
-};
-
-const viewDetails = (invoice) => {
-  console.log(`Viewing details for: ${invoice.id}`);
-};
-
-const InvoiceItem = ({ item }) => (
-  <Card style={styles.invoiceCard}>
-    <Card.Content>
-      <View style={styles.invoiceHeader}>
-        <Text style={styles.invoiceId}>{item.id}</Text>
-        <Badge style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          {item.status}
-        </Badge>
-      </View>
-      
-      <Text style={styles.projectName}>{item.projectName}</Text>
-      
-      <View style={styles.invoiceDetails}>
-        <Text style={styles.dateText}>{formatDate(item.date)}</Text>
-        <Text style={styles.amountText}>{item.amount.toFixed(2)} €</Text>
-      </View>
-      
-      <View style={styles.actionButtons}>
-        <Button 
-          mode="contained" 
-          style={[styles.button, styles.downloadButton]}
-          labelStyle={styles.buttonLabel}
-          onPress={() => downloadInvoice(item)}
-        >
-          Download
-        </Button>
-        <Button 
-          mode="outlined" 
-          style={[styles.button, styles.detailsButton]}
-          labelStyle={[styles.buttonLabel, { color: palette.DARK_BLUE }]}
-          onPress={() => viewDetails(item)}
-        >
-          Details
-        </Button>
-      </View>
-    </Card.Content>
-  </Card>
-);
-
-export default function Invoices() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={palette.DARK_BLUE} />
-      
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Invoices</Text>
-      </View>
-      
-      <FlatList
-        data={invoices}
-        renderItem={({ item }) => <InvoiceItem item={item} />}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        ListFooterComponent={
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Showing {invoices.length} invoices</Text>
-          </View>
+  const removeMethod = (index) => {
+    Alert.alert(
+      'Confirm Removal',
+      'Are you sure you want to remove this payment method?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          onPress: () => {
+            const updatedMethods = [...paymentMethods];
+            updatedMethods.splice(index, 1);
+            setPaymentMethods(updatedMethods);
+          }
         }
-      />
-    </SafeAreaView>
+      ]
+    );
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('fr-TN', { style: 'currency', currency: 'TND' }).format(amount);
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <Text style={styles.pageTitle}>Secure Payment Management</Text>
+
+      {/* Payment Methods */}
+      <View style={styles.cardGrid}>
+        {paymentMethods.map((method, index) => (
+          <Card key={index} containerStyle={styles.paymentCard}>
+            <Card.Title style={styles.cardTitle}>{method.type} **** {method.last4}</Card.Title>
+            <Card.Divider />
+            <Text style={styles.cardText}>Expiry: {method.expiry}</Text>
+            <Text style={styles.cardText}>Amount: {formatCurrency(method.amount)}</Text>
+            <Button
+              title="Remove"
+              type="outline"
+              buttonStyle={styles.removeButton}
+              titleStyle={styles.removeButtonText}
+              onPress={() => removeMethod(index)}
+            />
+          </Card>
+        ))}
+      </View>
+
+      {/* Add New Method Form */}
+      <View style={styles.addMethodForm}>
+        <Card containerStyle={styles.formCard}>
+          <Card.Title style={styles.formTitle}>Add New Payment Method</Card.Title>
+          <Card.Divider />
+          
+          <View style={styles.formRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="Card Type (e.g. Visa)"
+              value={newMethod.type}
+              onChangeText={(text) => setNewMethod({...newMethod, type: text})}
+            />
+          </View>
+          
+          <View style={styles.formRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="Last 4 Digits"
+              value={newMethod.last4}
+              onChangeText={(text) => setNewMethod({...newMethod, last4: text})}
+              maxLength={4}
+              keyboardType="numeric"
+            />
+          </View>
+          
+          <View style={styles.formRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="Expiry Date (MM/YY)"
+              value={newMethod.expiry}
+              onChangeText={(text) => setNewMethod({...newMethod, expiry: text})}
+            />
+          </View>
+          
+          <View style={styles.formRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="Amount (TND)"
+              value={newMethod.amount}
+              onChangeText={(text) => setNewMethod({...newMethod, amount: text})}
+              keyboardType="numeric"
+            />
+          </View>
+          
+          <Button
+            title="Add Method"
+            buttonStyle={styles.addButton}
+            onPress={addPaymentMethod}
+          />
+        </Card>
+      </View>
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E6F2FF',
-  },
-  header: {
-    backgroundColor: palette.DARK_BLUE,
+    backgroundColor: '#F8FAFF',
     padding: 16,
-    alignItems: 'center',
   },
-  headerTitle: {
-    color: 'white',
-    fontSize: 20,
+  pageTitle: {
+    color: '#0F2573',
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 24,
+    textAlign: 'center',
   },
-  listContent: {
-    padding: 16,
-    paddingBottom: 32,
+  cardGrid: {
+    marginBottom: 20,
   },
-  invoiceCard: {
+  paymentCard: {
+    backgroundColor: '#E1F0FF',
+    borderRadius: 16,
+    borderWidth: 0,
     marginBottom: 16,
-    borderRadius: 12,
-    backgroundColor: 'white',
-    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
-  invoiceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  cardTitle: {
+    color: '#0F2573',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'left',
+  },
+  cardText: {
+    color: '#5E548E',
     marginBottom: 8,
   },
-  invoiceId: {
+  removeButton: {
+    borderColor: '#dc3545',
+    marginTop: 10,
+  },
+  removeButtonText: {
+    color: '#dc3545',
+  },
+  addMethodForm: {
+    marginTop: 20,
+    marginBottom: 40,
+  },
+  formCard: {
+    borderRadius: 16,
+    borderColor: '#D6BEDA',
+    borderWidth: 1,
+  },
+  formTitle: {
+    color: '#0F2573',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  formRow: {
+    marginBottom: 16,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#D6BEDA',
+    borderRadius: 8,
+    padding: 12,
     fontSize: 16,
-    fontWeight: '600',
-    color: palette.DARK_BLUE,
   },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  projectName: {
-    fontSize: 16,
-    color: palette.DARKER_BLUE,
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  invoiceDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  amountText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: palette.DARK_BLUE,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  addButton: {
+    backgroundColor: '#0F2573',
+    borderRadius: 8,
+    paddingVertical: 12,
     marginTop: 8,
   },
-  button: {
-    flex: 1,
-    marginHorizontal: 4,
-    borderRadius: 8,
-  },
-  downloadButton: {
-    backgroundColor: palette.MEDIUM_BLUE,
-  },
-  detailsButton: {
-    borderColor: palette.MEDIUM_BLUE,
-  },
-  buttonLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  footer: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  footerText: {
-    color: '#666',
-    fontSize: 14,
-  },
 });
+
+export default Invoices;
