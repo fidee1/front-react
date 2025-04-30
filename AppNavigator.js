@@ -12,6 +12,8 @@ import Invoices from './Invoices';
 import Inbox from './Inbox';
 import SplashScreen from './SplashScreen';
 import ProfilClient from './ProfilClient';
+import ProfilClient from "../ProfilClient";
+import projectlist from "../projectlist";
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -31,6 +33,8 @@ const AppNavigator = () => {
       <Stack.Screen name="Inbox" component={Inbox} />
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
       <Stack.Screen name="ProfilClient"component={ProfilClient}/>
+      <Stack.Screen name="ProjectManagement"component={ProjectManagement}/>
+      <Stack.Screen name="projectlist"component={projectlist}/>
     </Stack.Navigator>
   );
 };

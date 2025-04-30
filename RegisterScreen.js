@@ -43,13 +43,26 @@ export default function RegisterScreen({ navigation }) {
       showToast("error", "Passwords do not match");
       return;
     }
-
+    const userData = {
+      name,
+      lastName,
+      email,
+      password,
+      role,
+    };
+  
+    // Vérification des données avant l'envoi
+    console.log("Données envoyées : ", userData);
     dispatch(
       register(
-        { name, lastName, email, password, role },
+        userData, 
         () => {
           showToast("success", "Registration successful! You can now log in.");
-          setTimeout(() => navigation.navigate("LoginScreen"), 1500);
+          // Confirme que la fonction onSuccess est bien exécutée
+          setTimeout(() => {
+            console.log("Navigating to LoginScreen...");
+            navigation.navigate("LoginScreen");
+          }, 1500);
         },
         (errorMessage) => showToast("error", errorMessage)
       )

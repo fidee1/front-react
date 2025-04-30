@@ -4,7 +4,7 @@ import { Button } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const ProfilClient = () => {
+const ProfilClient = ({ navigation }) => {  // Ajout de navigation dans les props
   const [profile, setProfile] = useState({
     companyName: '',
     companyDescription: '',
@@ -63,9 +63,13 @@ const ProfilClient = () => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Title */}
-      <View style={styles.titleContainer}>
+      {/* Header avec bouton de retour et titre */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color="#0F2573" />
+        </TouchableOpacity>
         <Text style={styles.pageTitle}>👤 Client Profile</Text>
+        <View style={styles.headerSpacer} /> {/* Pour centrer le titre */}
       </View>
 
       {/* Client Information Card */}
@@ -192,21 +196,21 @@ const ProfilClient = () => {
           </ScrollView>
 
           <View style={styles.modalFooter}>
-          <Button 
-          mode="outlined" 
-          onPress={closeModal}
-          style={styles.cancelButton}
-          labelStyle={styles.cancelButtonLabel}  // Style spécifique pour Cancel
-          color="#041D56"  // Couleur principale du bouton
-        >
-          Cancel
-        </Button>
-        <Button 
-          mode="contained" 
-          onPress={saveProfile}
-          style={styles.saveButton}
-          labelStyle={styles.buttonLabel}
-        >
+            <Button 
+              mode="outlined" 
+              onPress={closeModal}
+              style={styles.cancelButton}
+              labelStyle={styles.cancelButtonLabel}
+              color="#041D56"
+            >
+              Cancel
+            </Button>
+            <Button 
+              mode="contained" 
+              onPress={saveProfile}
+              style={styles.saveButton}
+              labelStyle={styles.buttonLabel}
+            >
               Save
             </Button>
           </View>
@@ -222,28 +226,35 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f5f5f5',
   },
-  titleContainer: {
-    marginTop: 10,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 10,
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerSpacer: {
+    width: 24, // Même largeur que le bouton de retour pour centrer le titre
   },
   pageTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#0F2573',
     textAlign: 'center',
-    paddingVertical: 5,
+    flex: 1,
   },
   profileCard: {
     backgroundColor: 'white',
     borderRadius: 10,
-    padding: 20,
+    padding: 15,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    marginTop: 0,
   },
   sectionTitle: {
     fontSize: 18,
@@ -344,7 +355,7 @@ const styles = StyleSheet.create({
     borderColor: '#0F2573',
   },
   cancelButtonLabel: {
-    color: '#041D56',  // Nouvelle couleur DARKER_BLUE pour le texte Cancel
+    color: '#041D56',
   },
   saveButton: {
     backgroundColor: '#0F2573',

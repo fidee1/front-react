@@ -96,11 +96,11 @@ function SidebarNav() {
   ];
 
   const clientNavItems = [
-    { name: "Profil Client", route: "ProfilClient", icon: "person-outline" },
+    { name: "Profil", route: "ProfilClient", icon: "person-outline" },
     { name: "Invoices", route: "Invoices", icon: "cash-outline" },
     { name: "Project Management", route: "ProjectManagement", icon: "construct-outline" },
     { name: "Claim", route: "Claim", icon: "library-outline" },
-    { name: "Project List", route: "ProjectList", icon: "list-outline" },
+    { name: "Project List", route: "projectlist", icon: "list-outline" },
     { name: "Inbox", route: "Inbox", icon: "mail-outline" },
     { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout },
   ];
@@ -373,16 +373,15 @@ const styles = StyleSheet.create({
   },
   sidebar: {
     position: "absolute",
-    top:20,
+    top: 0,
     left: 0,
-    width:150,
+    width: 150,
     height: "100%",
-    backgroundColor: "#ADE1FB",
+    backgroundColor: "#ADE1FB", // Fond bleu clair de la barre latérale
     paddingVertical: 20,
     zIndex: 20,
-    paddingTop:30,//outer de l'espace pour l'icône du menu
+    paddingTop: 30,
   },
-  
   sidebarIcon: {
     color: "#266CA9",// de l'icône du menu
     marginLeft: 20,
@@ -409,15 +408,23 @@ const styles = StyleSheet.create({
   navItem: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#444",
+    padding: 10,
+    marginHorizontal: 10, // Ajoute un peu d'espace sur les côtés
+    marginVertical: 5, // Espace entre les éléments
+    backgroundColor: "white", // Fond blanc pour chaque élément
+    borderRadius: 8, // Coins arrondis
   },
+  
   navText: {
     marginLeft: 15,
-    color: "#FFF",
-    fontSize: 16,
+    color: "#041D56", // Texte en bleu foncé
+    fontSize: 12,
+    fontWeight: "500", // Un peu plus gras
   },
+  icon: {
+    color: "#041D56", // Icônes en bleu foncé pour correspondre au texte
+  },
+
   overlay: {
     position: "absolute",
     top: 0,

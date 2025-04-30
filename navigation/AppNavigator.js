@@ -13,6 +13,8 @@ import Invoices from "../Invoices";
 import Inbox from "../Inbox";
 import SplashScreen from "../SplashScreen";
 import ProfilClient from "../ProfilClient";
+import ProjectManagement from "../ProjectManagement";
+import projectlist from "../projectlist";
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -48,6 +50,8 @@ export default function AppNavigator() {
           <Stack.Screen name="Invoices" component={Invoices} />
           <Stack.Screen name="Inbox" component={Inbox} />
           <Stack.Screen name="ProfilClient"component={ProfilClient}/>
+          <Stack.Screen name="ProjectManagement"component={ProjectManagement}/>
+          <Stack.Screen name="projectlist"component={projectlist}/>
         </>
       ) : (
         <>
