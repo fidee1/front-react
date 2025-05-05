@@ -16,7 +16,7 @@ import Toast from "react-native-toast-message";
 import { register } from "./redux/actions/registerActions";
 import { Picker } from "@react-native-picker/picker";
 import Ionicons from "react-native-vector-icons/Ionicons";
-
+import axios from 'axios';
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");

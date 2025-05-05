@@ -15,6 +15,7 @@ import SplashScreen from "../SplashScreen";
 import ProfilClient from "../ProfilClient";
 import ProjectManagement from "../ProjectManagement";
 import projectlist from "../projectlist";
+import Freelancers from "../freelancers";
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -25,7 +26,7 @@ export default function AppNavigator() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSplashVisible(false); // Cache la SplashScreen après 3 secondes
-    },3000)
+    },5000)
     return () => clearTimeout(timer); // Nettoie le timer
   }, []);
 
@@ -52,6 +53,8 @@ export default function AppNavigator() {
           <Stack.Screen name="ProfilClient"component={ProfilClient}/>
           <Stack.Screen name="ProjectManagement"component={ProjectManagement}/>
           <Stack.Screen name="projectlist"component={projectlist}/>
+          <Stack.Screen name="Freelancers" component={Freelancers} />
+
         </>
       ) : (
         <>

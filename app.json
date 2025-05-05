@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true
     },
+    "sdkVersion": "53.0.0",
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",

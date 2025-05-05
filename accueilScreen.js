@@ -7,22 +7,19 @@ import {
   StyleSheet,
   ScrollView,
   TouchableWithoutFeedback,
-  ImageBackground,
   Alert,
   Button,
   TextInput,
   Modal,
-  FlatList,
   ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
-import { logout } from "./authSlice"; // Assurez-vous que le fichier de Redux est correctement configuré
+import { logout } from "./authSlice";
 import api from "./api";
 
 function SidebarNav() {
-//const userRole = useSelector((state) => state.auth.role); // Récupérer le rôle de l'utilisateur depuis Redux
-  const [showForm, setShowForm] = useState(false); // Contrôler l'affichage du formulaire
+  const [showForm, setShowForm] = useState(false);
   const [projectTitle, setProjectTitle] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [projectBudget, setProjectBudget] = useState("");
@@ -31,22 +28,26 @@ function SidebarNav() {
   const [skills, setSkills] = useState("");
   const [budgetRange, setBudgetRange] = useState("");
   const [projectsCount, setProjectsCount] = useState("");
-  // Fonction pour gérer le filtrage
+  const [freelancers, setFreelancers] = useState([
+    { id: 1, name: "John D.", skills: "React, Node", rate: 50 },
+    { id: 2, name: "Sarah M.", skills: "Design, UI/UX", rate: 45 },
+    { id: 3, name: "Alex T.", skills: "Python, Django", rate: 60 },
+    { id: 4, name: "Emma L.", skills: "iOS, Swift", rate: 55 },
+    { id: 5, name: "Mike R.", skills: "Android, Kotlin", rate: 50 },
+  ]);
+  
   const handleFilter = () => {
     console.log("Skills:", skills);
     console.log("Budget Range:", budgetRange);
     console.log("Projects Count:", projectsCount);
-    setShowFilterModal(false); // Fermer la modal après le filtrage
+    setShowFilterModal(false);
   };
   
-  // Fonction pour publier le projet
   const handlePublishProject = () => {
     if (!projectTitle || !projectDescription || !projectBudget || !projectDeadline) {
       Alert.alert("Error", "All fields must be filled!");
     } else {
-      // Simuler l'envoi des données
       Alert.alert("Success", "Your project has been published!");
-      // Réinitialiser le formulaire
       setProjectTitle("");
       setProjectDescription("");
       setProjectBudget("");
@@ -55,13 +56,13 @@ function SidebarNav() {
     }
   };
 
-  const userRole = useSelector((state) => state.auth.role); // Récupère le rôle via Redux
-  const user = useSelector((state) => state.auth.user); // Récupère l'utilisateur via Redux
-  const token = useSelector((state) => state.auth.token); // Récupère le token via Redux
-  const dispatch = useDispatch(); // Pour effectuer la déconnexion
+  const userRole = useSelector((state) => state.auth.role);
+  const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
+  const dispatch = useDispatch();
   const navigation = useNavigation();
 
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false); // État pour afficher/masquer la barre latérale
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [data, setData] = useState("");
 
   const handleLogout = () => {
@@ -76,7 +77,7 @@ function SidebarNav() {
         {
           text: "Yes",
           onPress: () => {
-            dispatch(logout()); // Déclenche la déconnexion
+            dispatch(logout());
             navigation.replace("TabNavigator", { screen: "LoginScreen" });
           },
         },
@@ -103,6 +104,7 @@ function SidebarNav() {
     { name: "Project List", route: "projectlist", icon: "list-outline" },
     { name: "Inbox", route: "Inbox", icon: "mail-outline" },
     { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout },
+    { name: "Freelancers", route: "Freelancers", icon: "people-outline" }
   ];
 
   const navItems = userRole === "freelancer" ? freelancerNavItems : clientNavItems;
@@ -146,19 +148,13 @@ function SidebarNav() {
   );
 
   return (
-    <ImageBackground
-      source={require("./assets/images/acc.jpg")}
-      style={styles.imageBackground}
-      resizeMode="cover"
-    >
+    <View style={[styles.container, { backgroundColor: userRole === "freelancer" || userRole === "client" ? "#FFF" : "transparent" }]}>
       <View style={styles.mainContainer}>
-        {/* En-tête global en haut de l'écran */}
         <View style={styles.globalHeader}>
           <FontAwesome5 name="laptop-code" size={28} style={styles.globalHeaderIcon} />
           <Text style={styles.globalHeaderTitle}>Freelancy</Text>
         </View>
   
-        {/* Bouton pour afficher/masquer la barre latérale */}
         <TouchableOpacity
           style={styles.menuButton}
           onPress={() => setIsSidebarVisible(!isSidebarVisible)}
@@ -166,14 +162,12 @@ function SidebarNav() {
           <FontAwesome5 name="bars" size={28} color="#ADE1FB" />
         </TouchableOpacity>
   
-        {/* Overlay lorsque la barre latérale est visible */}
         {isSidebarVisible && (
           <TouchableWithoutFeedback onPress={() => setIsSidebarVisible(false)}>
             <View style={styles.overlay} />
           </TouchableWithoutFeedback>
         )}
   
-        {/* Barre latérale */}
         {isSidebarVisible && (
           <View style={styles.sidebar}>
             <View style={styles.sidebarHeader}>
@@ -192,178 +186,264 @@ function SidebarNav() {
           </View>
         )}
   
-      {/* Contenu principal */}
-<View style={styles.content}>
-  {userRole === "freelancer" ? (
-    <View style={styles.roleContent}>
-      <Text style={styles.roleTitle}>Bienvenue, Freelancer !</Text>
-      <Text style={styles.roleText}>
-        Ici, vous pouvez gérer vos offres, projets, et consulter vos factures.
-      </Text>
-    </View>
-  ) : userRole === "client" ? (
-    <>
-      <View style={styles.roleContent}>
-        <Text style={styles.roleTitle}>Welcome, Client! </Text>
-        <Text style={[styles.roleText, { marginBottom: 20 }]}>
-          Are you looking for a freelancer for your project? Here, you can post
-          your project and connect with the perfect freelancer to meet your
-          needs.
-        </Text>
-        {/* Bouton pour afficher le formulaire */}
-        <Button
-          title="Publish a Project"
-          onPress={() => setShowForm(true)}
-          color="#041D56"
-        />
-
-        {/* Modal pour afficher le formulaire */}
-        <Modal
-          visible={showForm}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setShowForm(false)} // Permet de fermer le modal en appuyant en dehors
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.formContainer}>
-              <Text style={styles.formTitle}>Post Your Project</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Project Title"
-                value={projectTitle}
-                onChangeText={setProjectTitle}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Project Description"
-                value={projectDescription}
-                onChangeText={setProjectDescription}
-                multiline
-                numberOfLines={4}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Budget"
-                keyboardType="numeric"
-                value={projectBudget}
-                onChangeText={setProjectBudget}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Project Deadline (e.g., 30 days)"
-                value={projectDeadline}
-                onChangeText={setProjectDeadline}
-              />
-
-              <Button
-                title="Submit Project"
-                onPress={handlePublishProject}
-                color="#0F2573"
-              />
-              <Button
-                title="Close"
-                onPress={() => setShowForm(false)}
-                color="#01082D"
-              />
+        <View style={styles.content}>
+          {userRole === "freelancer" ? (
+            <View style={styles.roleContent}>
+              <Text style={styles.roleTitle}>Bienvenue, Freelancer !</Text>
+              <Text style={styles.roleText}>
+                Ici, vous pouvez gérer vos offres, projets, et consulter vos factures.
+              </Text>
             </View>
-          </View>
-        </Modal>
-      </View>
-      {/* Deuxième section : Zone de filtrage */}
-      <View style={styles.roleContent}>
-        <Text style={styles.roleTitle}>Filter Freelancers</Text>
-        <Text style={[styles.roleText, { marginBottom: 20 }]}>
-          Use the filters below to narrow down your search for the perfect
-          freelancer.
-        </Text>
-        <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setShowFilterModal(true)}
-        >
-          <Text style={styles.filterButtonText}>Open Filter Options</Text>
-        </TouchableOpacity>
-      </View>
+          ) : userRole === "client" ? (
+            <>
+              <View style={styles.roleContent}>
+                <Text style={styles.roleTitle}>Welcome, Client! </Text>
+                <Text style={[styles.roleText, { marginBottom: 20 }]}>
+                  Are you looking for a freelancer for your project? Here, you can post
+                  your project and connect with the perfect freelancer to meet your
+                  needs.
+                </Text>
+                <Button
+                  title="Publish a Project"
+                  onPress={() => setShowForm(true)}
+                  color="#041D56"
+                />
 
-      {/* Modal pour le formulaire de filtrage */}
-      <Modal
-        visible={showFilterModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowFilterModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Filter Freelancers</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Skills (e.g., React, Laravel)"
-              value={skills}
-              onChangeText={setSkills}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Budget Range (e.g., $500-$1000)"
-              value={budgetRange}
-              onChangeText={setBudgetRange}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Number of Projects (e.g., >5)"
-              keyboardType="numeric"
-              value={projectsCount}
-              onChangeText={setProjectsCount}
-            />
-            <View style={styles.buttonGroup}>
-              <Button
-                title="Filter"
-                onPress={handleFilter}
-                color= "#041D56"
+                <TouchableOpacity
+                  style={styles.filterButton}
+                  onPress={() => setShowFilterModal(true)}
+                >
+                  <Text style={styles.filterButtonText}>Open Filter Options</Text>
+                </TouchableOpacity>
+              </View>
 
-              />
-              <Button
-                title="Close"
-                onPress={() => setShowFilterModal(false)}
-                color="#01082D"
-              />
-            </View>
-          </View>
+              {/* Liste horizontale des freelancers */}
+              <View style={styles.freelancersSection}>
+                <Text style={styles.sectionTitle}>Top Freelancers</Text>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.freelancersScroll}
+                >
+                  {freelancers.map((freelancer) => (
+                    <TouchableOpacity 
+                      key={freelancer.id} 
+                      style={styles.freelancerCard}
+                    >
+                      <View style={styles.avatar}>
+                        <Ionicons name="person-circle-outline" size={40} color="#041D56" />
+                      </View>
+                      <Text style={styles.freelancerName}>{freelancer.name}</Text>
+                      <Text style={styles.freelancerSkills}>{freelancer.skills}</Text>
+                      <Text style={styles.freelancerRate}>${freelancer.rate}/hr</Text>
+                    </TouchableOpacity>
+                  ))}
+                  
+                  {/* Bouton More */}
+                  <TouchableOpacity 
+                    style={styles.moreButton}
+                    onPress={() => navigation.navigate("Freelancers")}
+                  >
+                    <Text style={styles.moreText}>More</Text>
+                    <Ionicons name="chevron-forward" size={20} color="#041D56" />
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+
+              <Modal
+                visible={showForm}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setShowForm(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.formContainer}>
+                    <Text style={styles.formTitle}>Post Your Project</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Project Title"
+                      value={projectTitle}
+                      onChangeText={setProjectTitle}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Project Description"
+                      value={projectDescription}
+                      onChangeText={setProjectDescription}
+                      multiline
+                      numberOfLines={4}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Budget"
+                      keyboardType="numeric"
+                      value={projectBudget}
+                      onChangeText={setProjectBudget}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Project Deadline (e.g., 30 days)"
+                      value={projectDeadline}
+                      onChangeText={setProjectDeadline}
+                    />
+                    <Button
+                      title="Submit Project"
+                      onPress={handlePublishProject}
+                      color="#0F2573"
+                    />
+                    <Button
+                      title="Close"
+                      onPress={() => setShowForm(false)}
+                      color="#01082D"
+                    />
+                  </View>
+                </View>
+              </Modal>
+
+              <Modal
+                visible={showFilterModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowFilterModal(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+                    <Text style={styles.modalTitle}>Filter Freelancers</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Skills (e.g., React, Laravel)"
+                      value={skills}
+                      onChangeText={setSkills}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Budget Range (e.g., $500-$1000)"
+                      value={budgetRange}
+                      onChangeText={setBudgetRange}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Number of Projects (e.g., >5)"
+                      keyboardType="numeric"
+                      value={projectsCount}
+                      onChangeText={setProjectsCount}
+                    />
+                    <View style={styles.buttonGroup}>
+                      <Button
+                        title="Filter"
+                        onPress={handleFilter}
+                        color="#041D56"
+                      />
+                      <Button
+                        title="Close"
+                        onPress={() => setShowFilterModal(false)}
+                        color="#01082D"
+                      />
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+            </>
+          ) : (
+            <Text style={styles.roleText}>
+              Rôle inconnu. Veuillez contacter l'assistance.
+            </Text>
+          )}
         </View>
-      </Modal>
-      
-    </>
-  ) : (
-    <Text style={styles.roleText}>
-      Rôle inconnu. Veuillez contacter l'assistance.
-    </Text>
-  )}
-</View>
 
+        {/* Barre latérale en bas pour le client */}
+        {userRole === "client" && (
+          <View style={styles.bottomSidebar}>
+            <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("Inbox")}
+            >
+              <Ionicons name="mail-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Inbox</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("projectlist")}
+            >
+              <Ionicons name="list-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Projects</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("Freelancers")}
+            >
+              <Ionicons name="people-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Freelancers</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.centralButton} 
+              onPress={() => setShowForm(true)}
+            >
+              <Ionicons name="add" size={32} color="#FFF" />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("ProjectManagement")}
+            >
+              <Ionicons name="construct-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Manage</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("Invoices")}
+            >
+              <Ionicons name="cash-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Invoices</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("Claim")}
+            >
+              <Ionicons name="library-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Claim</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
-    </ImageBackground>
+    </View>
   );
-  
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "#FFF",
+  },
+  mainContainer: {
+    flex: 1,
+    position: "relative",
+    paddingBottom: 70,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
   globalHeader: {
-    flexDirection: "column", // Placer l'icône au-dessus du texte
+    flexDirection: "column",
     alignItems: "center",
-    marginTop: 40, // Ajuster l'espacement
+    marginTop: 40,
     marginBottom: 20,
   },
   globalHeaderIcon: {
     color: "#266CA9",
-    marginBottom: 5, // Espace entre l'icône et le texte
+    marginBottom: 5,
   },
   globalHeaderTitle: {
     color: "#266CA9",
     fontSize: 20,
     fontWeight: "bold",
-  },
-  mainContainer: {
-    flex: 1,
-    position: "relative",
   },
   menuButton: {
     position: "absolute",
@@ -377,54 +457,43 @@ const styles = StyleSheet.create({
     left: 0,
     width: 150,
     height: "100%",
-    backgroundColor: "#ADE1FB", // Fond bleu clair de la barre latérale
+    backgroundColor: "#ADE1FB",
     paddingVertical: 20,
     zIndex: 20,
     paddingTop: 30,
   },
-  sidebarIcon: {
-    color: "#266CA9",// de l'icône du menu
-    marginLeft: 20,
-    marginBottom:50,//spacement après l'icône du menu
-  },
-  
   sidebarHeader: {
-    flexDirection: "column", // Placer l'icône et le texte en colonne
+    flexDirection: "column",
     alignItems: "center",
     marginBottom: 50,
   },
-  
   headerIcon: {
-    color: "#266CA9",//r de l'icône
-    marginBottom: 2,// Espacement entre l'icône et le texte
+    color: "#266CA9",
+    marginBottom: 2,
   },
-  
   sidebarTitle: {
-    color: "#266CA9",// du texte
+    color: "#266CA9",
     fontSize: 20,
     fontWeight: "bold",
   },
-  
   navItem: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
-    marginHorizontal: 10, // Ajoute un peu d'espace sur les côtés
-    marginVertical: 5, // Espace entre les éléments
-    backgroundColor: "white", // Fond blanc pour chaque élément
-    borderRadius: 8, // Coins arrondis
+    marginHorizontal: 10,
+    marginVertical: 5,
+    backgroundColor: "white",
+    borderRadius: 8,
   },
-  
   navText: {
     marginLeft: 15,
-    color: "#041D56", // Texte en bleu foncé
+    color: "#041D56",
     fontSize: 12,
-    fontWeight: "500", // Un peu plus gras
+    fontWeight: "500",
   },
   icon: {
-    color: "#041D56", // Icônes en bleu foncé pour correspondre au texte
+    color: "#041D56",
   },
-
   overlay: {
     position: "absolute",
     top: 0,
@@ -436,23 +505,14 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    bottom: 20,
-    right: 20,
-  },
-  closeButton: {
-    position: "absolute",
-    top:0, // Positionne la flèche en haut de la barre latérale
-    right: 10, // Aligne la flèche à droite
-    zIndex: 20, // Assure que la flèche est visible
+    top: 0,
+    right: 10,
+    zIndex: 20,
   },
   closeButtonText: {
-    fontSize: 20,// Augmente la taille de la flèche
-    color: "#FFF", // Change la couleur en blanc
-    fontWeight: "bold", // Ajoute un style gras pour une meilleure visibilité
-  },
-  imageBackground: {
-    flex: 1,
-    justifyContent: "center",
+    fontSize: 20,
+    color: "#FFF",
+    fontWeight: "bold",
   },
   roleContent: {
     backgroundColor: "#f5f5f5",
@@ -468,7 +528,7 @@ const styles = StyleSheet.create({
   roleTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color:"#041D56",
+    color: "#041D56",
     marginBottom: 2,
   },
   roleText: {
@@ -478,9 +538,9 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "center", // Centre verticalement
-    alignItems: "center", // Centre horizontalement
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // Fond sombre
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   formContainer: {
     width: "80%",
@@ -492,14 +552,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 3,
-    alignSelf: "center", // S'assure que le modal reste centré
+    alignSelf: "center",
   },
   formTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#266CA9",
     marginBottom: 15,
-    textAlign: "center", // Centre le titre
+    textAlign: "center",
   },
   input: {
     height: 40,
@@ -510,48 +570,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
   },
-  container: {
-    flex: 1,
-    padding: 10,
-    backgroundColor: "#f5f5f5",
-  },
-  roleContent: {
-    backgroundColor: "#f5f5f5",
-    padding: 20,
-    margin: 10,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  roleTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#266CA9",
-    marginBottom: 10,
-  },
-  roleText: {
-    fontSize: 16,
-    color: "#555",
-    lineHeight: 22,
-  },
   filterButton: {
     backgroundColor: "#041D56",
     padding: 8,
     borderRadius: 0,
     alignItems: "center",
+    marginTop: 10,
   },
   filterButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "#fff",
@@ -571,41 +600,117 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center",
   },
-  input: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 4,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    fontSize: 16,
-  },
   buttonGroup: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 10,
   },
-  freelancerItem: {
-    backgroundColor: '#fff',
-    padding: 10,
-    marginVertical: 8,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+  bottomSidebar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    height: 80,
   },
-  freelancerName: {
+  bottomNavItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    minWidth: 50,
+  },
+  centralButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#041D56',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginTop: -30,
+    elevation: 5,
+  },
+  bottomNavText: {
+    fontSize: 9,
+    color: '#041D56',
+    marginTop: 5,
+    textAlign: 'center',
+  },
+  // Nouveaux styles pour la section freelancers
+  freelancersSection: {
+    marginTop: 20,
+    backgroundColor: '#f5f5f5',
+    padding: 15,
+    borderRadius: 10,
+  },
+  sectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#041D56',
+    marginBottom: 10,
+  },
+  freelancersScroll: {
+    paddingVertical: 5,
+  },
+  freelancerCard: {
+    width: 120,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  avatar: {
+    marginBottom: 5,
+  },
+  freelancerName: {
+    fontWeight: 'bold',
+    color: '#041D56',
+    fontSize: 14,
+    textAlign: 'center',
   },
   freelancerSkills: {
-    fontSize: 14,
-    color: '#555',
+    color: '#666',
+    fontSize: 12,
+    textAlign: 'center',
+    marginVertical: 3,
   },
-  
+  freelancerRate: {
+    color: '#266CA9',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  moreButton: {
+    width: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  moreText: {
+    color: '#041D56',
+    fontWeight: 'bold',
+    marginRight: 5,
+  },
 });
 
 export default SidebarNav;

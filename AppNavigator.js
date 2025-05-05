@@ -14,6 +14,7 @@ import SplashScreen from './SplashScreen';
 import ProfilClient from './ProfilClient';
 import ProfilClient from "../ProfilClient";
 import projectlist from "../projectlist";
+import Freelancers from '../Freelancers';
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
@@ -35,6 +36,7 @@ const AppNavigator = () => {
       <Stack.Screen name="ProfilClient"component={ProfilClient}/>
       <Stack.Screen name="ProjectManagement"component={ProjectManagement}/>
       <Stack.Screen name="projectlist"component={projectlist}/>
+      <Stack.Screen name="Freelancers" component={Freelancers} />
     </Stack.Navigator>
   );
 };
