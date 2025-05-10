@@ -1,51 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, Button, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const Freelancers = ({ navigation }) => {
   const [freelancers, setFreelancers] = useState([
     {
-      id: 1,
-      name: 'John Doe',
-      skills: 'React, Node.js, MongoDB',
+      id: '1',
+      title: 'Senior React Native Developer',
+      skills: 'React Native, JavaScript, Firebase, Redux',
+      experience: '5 years of mobile development experience',
+      portfolio: 'https://github.com/johndoe',
+      rating: 4,
       hourlyRate: 50,
       completedProjects: 12,
-      rating: 4.8
+      user: {
+        id: '101',
+        name: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        phone: '+216 12 345 678',
+        location: 'Tunis, Tunisia'
+      }
     },
     {
-      id: 2,
-      name: 'Jane Smith',
-      skills: 'Laravel, PHP, MySQL',
+      id: '2',
+      title: 'UI/UX Designer',
+      skills: 'Figma, Adobe XD, Prototyping, User Research',
+      experience: '3 years of interface design experience',
+      portfolio: 'https://behance.net/janesmith',
+      rating: 4.5,
       hourlyRate: 45,
       completedProjects: 8,
-      rating: 4.5
+      user: {
+        id: '102',
+        name: 'Jane',
+        lastName: 'Smith',
+        email: 'jane.smith@example.com',
+        phone: '+216 98 765 432',
+        location: 'Sfax, Tunisia'
+      }
     },
     {
-      id: 3,
-      name: 'Alex Johnson',
-      skills: 'React Native, Firebase',
+      id: '3',
+      title: 'Full Stack Developer',
+      skills: 'Node.js, Express, MongoDB, React',
+      experience: '4 years of web development experience',
+      portfolio: 'https://github.com/alexj',
+      rating: 4.8,
       hourlyRate: 60,
       completedProjects: 15,
-      rating: 4.9
-    },
-    {
-      id: 4,
-      name: 'Sarah Williams',
-      skills: 'Python, Django, Data Science',
-      hourlyRate: 70,
-      completedProjects: 20,
-      rating: 5.0
-    },
-    {
-      id: 5,
-      name: 'Mike Brown',
-      skills: 'Angular, TypeScript, AWS',
-      hourlyRate: 55,
-      completedProjects: 10,
-      rating: 4.7
+      user: {
+        id: '103',
+        name: 'Alex',
+        lastName: 'Johnson',
+        email: 'alex.j@example.com',
+        phone: '+216 55 444 333',
+        location: 'Sousse, Tunisia'
+      }
     }
   ]);
-  
+
   const [filteredFreelancers, setFilteredFreelancers] = useState([]);
   const [skillFilter, setSkillFilter] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,34 +68,33 @@ const Freelancers = ({ navigation }) => {
 
   useEffect(() => {
     setFilteredFreelancers(freelancers);
-  }, []);
+  }, [freelancers]);
 
   const applyFilters = () => {
     setLoading(true);
     
     let results = [...freelancers];
     
-    // Filter by skills
     if (skillFilter) {
       results = results.filter(freelancer => 
         freelancer.skills.toLowerCase().includes(skillFilter.toLowerCase())
       );
     }
     
-    // Filter by minimum rate
     if (minRate) {
       const min = parseFloat(minRate);
       results = results.filter(freelancer => freelancer.hourlyRate >= min);
     }
     
-    // Filter by maximum rate
     if (maxRate) {
       const max = parseFloat(maxRate);
       results = results.filter(freelancer => freelancer.hourlyRate <= max);
     }
     
-    setFilteredFreelancers(results);
-    setLoading(false);
+    setTimeout(() => {
+      setFilteredFreelancers(results);
+      setLoading(false);
+    }, 500);
   };
 
   const clearFilters = () => {
@@ -94,18 +107,23 @@ const Freelancers = ({ navigation }) => {
   const renderFreelancerItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.freelancerCard}
-      onPress={() => navigation.navigate('FreelancerProfile', { freelancer: item })}
+      onPress={() => navigation.navigate('Profile', { 
+        freelancerId: item.id,
+        isExternalView: true
+      })}
     >
       <View style={styles.freelancerHeader}>
-        <Text style={styles.freelancerName}>{item.name}</Text>
+        <Text style={styles.freelancerName}>{item.user.name} {item.user.lastName}</Text>
         <View style={styles.ratingContainer}>
           <Ionicons name="star" size={16} color="#FFD700" />
           <Text style={styles.ratingText}>{item.rating}</Text>
         </View>
       </View>
+      <Text style={styles.titleText}>{item.title}</Text>
       <Text style={styles.skillsText}><Text style={styles.label}>Skills:</Text> {item.skills}</Text>
-      <Text style={styles.rateText}><Text style={styles.label}>Rate:</Text> ${item.hourlyRate}/hour</Text>
-      <Text style={styles.projectsText}><Text style={styles.label}>Projects:</Text> {item.completedProjects}</Text>
+      <Text style={styles.rateText}><Text style={styles.label}>Hourly Rate:</Text> {item.hourlyRate} TND</Text>
+      <Text style={styles.projectsText}><Text style={styles.label}>Completed Projects:</Text> {item.completedProjects}</Text>
+      <Text style={styles.locationText}><Ionicons name="location-outline" size={14} /> {item.user.location}</Text>
     </TouchableOpacity>
   );
 
@@ -124,14 +142,14 @@ const Freelancers = ({ navigation }) => {
         <View style={styles.rateFilterContainer}>
           <TextInput
             style={[styles.input, styles.rateInput]}
-            placeholder="Min rate ($)"
+            placeholder="Min rate (TND)"
             keyboardType="numeric"
             value={minRate}
             onChangeText={setMinRate}
           />
           <TextInput
             style={[styles.input, styles.rateInput]}
-            placeholder="Max rate ($)"
+            placeholder="Max rate (TND)"
             keyboardType="numeric"
             value={maxRate}
             onChangeText={setMaxRate}
@@ -149,7 +167,7 @@ const Freelancers = ({ navigation }) => {
             style={[styles.button, styles.clearButton]}
             onPress={clearFilters}
           >
-            <Text style={styles.buttonText}>Clear</Text>
+            <Text style={styles.buttonText}>Reset</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -159,15 +177,15 @@ const Freelancers = ({ navigation }) => {
       </Text>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#041D56" style={styles.loader} />
+        <ActivityIndicator size="large" color="#0F2573" style={styles.loader} />
       ) : (
         <FlatList
           data={filteredFreelancers}
           renderItem={renderFreelancerItem}
-          keyExtractor={item => item.id.toString()}
+          keyExtractor={item => item.id}
           contentContainerStyle={styles.listContainer}
           ListEmptyComponent={
-            <Text style={styles.noResults}>No freelancers match your filters</Text>
+            <Text style={styles.noResults}>No freelancers match your criteria</Text>
           }
         />
       )}
@@ -178,7 +196,7 @@ const Freelancers = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F8FAFF',
     padding: 15,
   },
   filterSection: {
@@ -195,7 +213,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#041D56',
+    color: '#0F2573',
     marginBottom: 15,
   },
   input: {
@@ -227,7 +245,7 @@ const styles = StyleSheet.create({
     width: '48%',
   },
   applyButton: {
-    backgroundColor: '#041D56',
+    backgroundColor: '#0F2573',
   },
   clearButton: {
     backgroundColor: '#6c757d',
@@ -262,7 +280,12 @@ const styles = StyleSheet.create({
   freelancerName: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: '#041D56',
+    color: '#0F2573',
+  },
+  titleText: {
+    fontSize: 15,
+    color: '#5E548E',
+    marginBottom: 8,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -270,7 +293,7 @@ const styles = StyleSheet.create({
   },
   ratingText: {
     marginLeft: 5,
-    color: '#041D56',
+    color: '#0F2573',
     fontWeight: 'bold',
   },
   label: {
@@ -290,6 +313,14 @@ const styles = StyleSheet.create({
   projectsText: {
     fontSize: 14,
     color: '#495057',
+    marginBottom: 5,
+  },
+  locationText: {
+    fontSize: 13,
+    color: '#6c757d',
+    marginTop: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   noResults: {
     textAlign: 'center',

@@ -1,358 +1,570 @@
-import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity, Linking, Alert, Dimensions } from 'react-native';
-import { Modal, TextInput, Button } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image, Alert, FlatList } from 'react-native';
+import { Button, Badge } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
+import { MaterialIcons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
-
-const Profile = () => {
-  const [visible, setVisible] = useState(false);
-  const [skillsInput, setSkillsInput] = useState('');
-  const [freelancer, setFreelancer] = useState({
-    name: 'Sarah Lee',
-    title: 'Full Stack Developer',
-    photo: 'https://via.placeholder.com/150',
-    rate: 35,
-    skills: ['Vue.js', 'Laravel', 'Tailwind CSS', 'Docker'],
-    experience: ['3 years at DevTech Solutions', 'Freelance projects on Upwork and Fiverr'],
-    portfolio: [
-      { title: 'E-commerce App', link: 'https://project1.example.com' },
-      { title: 'Portfolio Website', link: 'https://project2.example.com' },
-    ],
+const Profile = ({ navigation, route }) => {
+  const isExternalView = route.params?.isExternalView || false;
+  const [freelance, setFreelance] = useState({
+    id: 'freelance456',
+    user_id: '',
+    titre: 'Senior React Native Developer',
+    competences: 'React Native, JavaScript, Firebase, Redux',
+    experience: '5 years of experience in mobile development',
+    portfolio: 'https://github.com/example',
+    note: 4,
+    user: {
+      name: 'John',
+      lastName: 'Doe'
+    }
   });
 
-  const [edited, setEdited] = useState({ ...freelancer });
+  const [editedProfile, setEditedProfile] = useState({ ...freelance });
+  const [modalVisible, setModalVisible] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [skillsInput, setSkillsInput] = useState('');
 
-  const openModal = () => {
-    setEdited({ ...freelancer });
-    setSkillsInput(freelancer.skills.join(', '));
-    setVisible(true);
-  };
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        // Simulation de chargement des données
+        setTimeout(() => {
+          setFreelance({
+            id: 'freelance456',
+            user_id: 'user789',
+            titre: 'Senior React Native Developer',
+            competences: 'React Native, JavaScript, Firebase, Redux',
+            experience: '5 years of experience in mobile development',
+            portfolio: 'https://github.com/example',
+            note: 4,
+            user: {
+              name: 'John',
+              lastName: 'Doe',
+              email: 'john.doe@example.com',
+              phone: '+1 555-987-6543',
+              location: 'Sfax, Tunisia'
+            }
+          });
+          setEditedProfile({
+            titre: 'Senior React Native Developer',
+            competences: 'React Native, JavaScript, Firebase, Redux',
+            experience: '5 years of experience in mobile development',
+            portfolio: 'https://github.com/example',
+            note: 4,
+            user: {
+              name: 'John',
+              lastName: 'Doe',
+              email: 'john.doe@example.com',
+              phone: '+1 555-987-6543',
+              location: 'Sfax, Tunisia'
+            }
+          });
+          setSkillsInput('React Native, JavaScript, Firebase, Redux');
+          setIsLoading(false);
+        }, 1000);
+      } catch (error) {
+        Alert.alert('Error', 'Failed to load profile data');
+        setIsLoading(false);
+      }
+    };
 
-  const saveChanges = () => {
-    setFreelancer({
-      ...edited,
-      skills: skillsInput.split(',').map(s => s.trim()),
-    });
-    setVisible(false);
-  };
-
-  const handleInputChange = (field, value) => {
-    setEdited(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+    fetchProfileData();
+  }, []);
 
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'We need access to your photos to change your profile image');
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 1,
+      quality: 0.8,
     });
 
     if (!result.canceled) {
-      setEdited(prev => ({
-        ...prev,
-        photo: result.assets[0].uri
-      }));
+      setProfileImage(result.assets[0].uri);
     }
   };
 
-  const openLink = (url) => {
-    Linking.canOpenURL(url).then(supported => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        Alert.alert('Error', `Don't know how to open this URL: ${url}`);
-      }
+  const handleSaveProfile = async () => {
+    setIsLoading(true);
+    try {
+      // Simulation de sauvegarde
+      setTimeout(() => {
+        const updatedProfile = {
+          ...editedProfile,
+          competences: skillsInput
+        };
+        setFreelance(updatedProfile);
+        setModalVisible(false);
+        Alert.alert('Success', 'Profile updated successfully');
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update profile');
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartChat = () => {
+    navigation.navigate('Inbox', { 
+      recipientId: freelance.id,
+      recipientName: `${freelance.user.name} ${freelance.user.lastName}`,
+      isFreelancer: true
     });
   };
 
+  const renderStars = (rating, editable = false) => {
+    return Array(5).fill(0).map((_, i) => (
+      <MaterialIcons
+        key={i}
+        name={i < rating ? 'star' : 'star-border'}
+        size={24}
+        color={i < rating ? '#FFD700' : '#ccc'}
+        onPress={editable ? () => {
+          setEditedProfile({...editedProfile, note: i + 1});
+        } : null}
+      />
+    ));
+  };
+
+  const skillsList = freelance.competences ? freelance.competences.split(',').map(skill => skill.trim()) : [];
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading profile...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      {/* Title */}
-      <Text style={styles.pageTitle}>👤 Profile</Text>
-
-      {/* Profile Card - Main container */}
-      <ScrollView style={styles.fullScreenCard}>
-        {/* Modify Button */}
-        <TouchableOpacity style={styles.modifyBtn} onPress={openModal}>
-          <Text style={styles.modifyBtnText}>✏️ Modify Profile</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color="#0F2573" />
         </TouchableOpacity>
+        <Text style={styles.pageTitle}>👤 Freelancer Profile</Text>
+        <View style={styles.headerSpacer} />
+      </View>
 
-        {/* Profile Content */}
-        <View style={styles.profileContent}>
-          {/* Top Section with Photo and Basic Info */}
-          <View style={styles.topSection}>
-            <Image source={{ uri: freelancer.photo }} style={styles.profilePhoto} />
-            <Text style={styles.name}>{freelancer.name}</Text>
-            <Text style={styles.title}>{freelancer.title}</Text>
-            <View style={styles.rateBadge}>
-              <Text style={styles.rateBadgeText}>💰 {freelancer.rate} $/h</Text>
-            </View>
-          </View>
+      <View style={styles.profileCard}>
+        {!isExternalView && (
+          <TouchableOpacity onPress={() => {
+            setEditedProfile(freelance);
+            setSkillsInput(freelance.competences);
+            setModalVisible(true);
+          }} style={styles.modifyButton}>
+            <Text>✏ Modify Profile</Text>
+          </TouchableOpacity>
+        )}
 
-          {/* Bottom Section with Details */}
-          <View style={styles.bottomSection}>
-            {/* Skills Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🧠 Skills</Text>
-              <View style={styles.skillsContainer}>
-                {freelancer.skills.map((skill, index) => (
-                  <View key={index} style={styles.skillBadge}>
-                    <Text style={styles.skillText}>{skill}</Text>
-                  </View>
-                ))}
+        <View style={styles.avatarContainer}>
+          <TouchableOpacity onPress={pickImage}>
+            {profileImage ? (
+              <Image source={{ uri: profileImage }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <MaterialIcons name="add-a-photo" size={40} color="#5E548E" />
               </View>
-            </View>
-
-            {/* Experience Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>💼 Experience</Text>
-              <View style={styles.list}>
-                {freelancer.experience.map((exp, index) => (
-                  <Text key={index} style={styles.listItem}>• {exp}</Text>
-                ))}
-              </View>
-            </View>
-
-            {/* Portfolio Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🖼️ Portfolio</Text>
-              <View style={styles.list}>
-                {freelancer.portfolio.map((item, index) => (
-                  <TouchableOpacity key={index} onPress={() => openLink(item.link)}>
-                    <Text style={styles.listItem}>
-                      <Text style={styles.portfolioTitle}>{item.title}</Text> - <Text style={styles.link}>View</Text>
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+            )}
+          </TouchableOpacity>
+          
+          <Text style={styles.name}>
+            {freelance.user.name} {freelance.user.lastName}
+          </Text>
+          <Text style={styles.title}>{freelance.titre}</Text>
+          
+          <Badge style={styles.rateBadge}>💰 {freelance.note} TND/h</Badge>
+          
+          <View style={styles.ratingContainer}>
+            {renderStars(freelance.note)}
           </View>
         </View>
-      </ScrollView>
 
-      {/* Edit Modal */}
-      <Modal visible={visible} onDismiss={() => setVisible(false)} contentContainerStyle={styles.modalContainer}>
-        <Text style={styles.modalTitle}>Modify Profile</Text>
-        
-        <TextInput
-          label="Name"
-          value={edited.name}
-          onChangeText={(text) => handleInputChange('name', text)}
-          style={styles.input}
-          mode="outlined"
-        />
-        
-        <TextInput
-          label="Title"
-          value={edited.title}
-          onChangeText={(text) => handleInputChange('title', text)}
-          style={styles.input}
-          mode="outlined"
-        />
-        
-        <TextInput
-          label="Rate ($/h)"
-          value={String(edited.rate)}
-          onChangeText={(text) => handleInputChange('rate', text)}
-          style={styles.input}
-          keyboardType="numeric"
-          mode="outlined"
-        />
-        
-        <TextInput
-          label="Skills (comma-separated)"
-          value={skillsInput}
-          onChangeText={setSkillsInput}
-          style={styles.input}
-          mode="outlined"
-        />
-        
-        <Button 
-          mode="outlined" 
-          onPress={pickImage}
-          style={styles.imageButton}
-        >
-          Change Photo
-        </Button>
-        
-        <View style={styles.modalButtons}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🧠 Skills</Text>
+          <View style={styles.skillsContainer}>
+            {skillsList.map((skill, index) => (
+              <Badge key={index} style={styles.skillBadge}>
+                {skill}
+              </Badge>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📧 Email</Text>
+          <Text style={styles.fieldValue}>{freelance.user.email}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📱 Phone</Text>
+          <Text style={styles.fieldValue}>{freelance.user.phone}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📍 Location</Text>
+          <Text style={styles.fieldValue}>{freelance.user.location}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>💼 Experience</Text>
+          <Text style={styles.fieldValue}>{freelance.experience}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🖼 Portfolio</Text>
+          <Text style={styles.fieldValue}>{freelance.portfolio}</Text>
+        </View>
+
+        {isExternalView && (
           <Button 
             mode="contained" 
-            onPress={saveChanges}
-            style={styles.saveButton}
+            onPress={handleStartChat}
+            style={styles.chatButton}
+            labelStyle={styles.buttonLabel}
+            icon="message"
           >
-            Save
+            Send Message
           </Button>
-          <Button 
-            mode="outlined" 
-            onPress={() => setVisible(false)}
-            style={styles.cancelButton}
-          >
-            Cancel
-          </Button>
+        )}
+      </View>
+
+      <Modal
+        animationType="slide"
+        transparent={false}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <MaterialIcons name="close" size={24} color="#999" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Title</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.titre}
+                onChangeText={(text) => setEditedProfile({...editedProfile, titre: text})}
+                placeholder="Enter your title"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Rate (TND/h)</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.note.toString()}
+                onChangeText={(text) => setEditedProfile({...editedProfile, note: parseInt(text) || 0})}
+                placeholder="Enter your rate"
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Skills (comma separated)</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={skillsInput}
+                onChangeText={setSkillsInput}
+                placeholder="React Native, JavaScript, etc."
+                multiline
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.user.email}
+                onChangeText={(text) => setEditedProfile({
+                  ...editedProfile,
+                  user: {...editedProfile.user, email: text}
+                })}
+                placeholder="Enter your email"
+                keyboardType="email-address"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Phone</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.user.phone}
+                onChangeText={(text) => setEditedProfile({
+                  ...editedProfile,
+                  user: {...editedProfile.user, phone: text}
+                })}
+                placeholder="Enter your phone"
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Location</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.user.location}
+                onChangeText={(text) => setEditedProfile({
+                  ...editedProfile,
+                  user: {...editedProfile.user, location: text}
+                })}
+                placeholder="Enter your location"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Experience</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={editedProfile.experience}
+                onChangeText={(text) => setEditedProfile({...editedProfile, experience: text})}
+                placeholder="Describe your experience"
+                multiline
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Portfolio</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.portfolio}
+                onChangeText={(text) => setEditedProfile({...editedProfile, portfolio: text})}
+                placeholder="Enter portfolio URL"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Rating</Text>
+              <View style={styles.ratingContainer}>
+                {renderStars(editedProfile.note, true)}
+              </View>
+            </View>
+          </ScrollView>
+
+          <View style={styles.modalFooter}>
+            <Button 
+              mode="outlined" 
+              onPress={() => setModalVisible(false)}
+              style={styles.cancelButton}
+              labelStyle={styles.cancelButtonLabel}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              mode="contained" 
+              onPress={handleSaveProfile}
+              style={styles.saveButton}
+              labelStyle={styles.buttonLabel}
+              loading={isLoading}
+              disabled={isLoading}
+            >
+              Save Changes
+            </Button>
+          </View>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFF',
-    padding: 25,
+    backgroundColor: '#f5f5f5',
+  },
+  contentContainer: {
+    padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerSpacer: {
+    width: 24,
   },
   pageTitle: {
-    fontSize:16,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#0F2573',
-    marginBottom: 16,
+    flex: 1,
     textAlign: 'center',
   },
-  fullScreenCard: {
-    backgroundColor: '#E1F0FF',
-    borderRadius: 16,
-    shadowColor: '#0F2573',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
-    width: '100%',
-    flex: 1,
-  },
-  modifyBtn: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    zIndex: 10,
-    padding: 8,
+  profileCard: {
+    backgroundColor: 'white',
     borderRadius: 12,
-    backgroundColor: 'transparent',
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    position: 'relative',
+  },
+  modifyButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 8,
     borderWidth: 1,
-    borderColor: '#0F2573',
+    borderColor: 'black',
+    borderRadius: 8,
+    zIndex: 1,
   },
-  modifyBtnText: {
-    color: '#0F2573',
-    fontSize: 14,
-  },
-  profileContent: {
-    padding: 16,
-    paddingTop: 50, // Space for the modify button
-  },
-  topSection: {
+  avatarContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  bottomSection: {
-    width: '100%',
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 10,
   },
-  profilePhoto: {
-    width: width * 0.4,
-    height: width * 0.4,
-    borderRadius: width * 0.2,
-    borderWidth: 3,
-    borderColor: '#0F2573',
-    marginBottom: 16,
+  avatarPlaceholder: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   name: {
-    color: '#0F2573',
+    fontSize: 18,
     fontWeight: '600',
-    fontSize: 20,
-    marginBottom: 4,
-    textAlign: 'center',
+    color: '#0F2573',
+    marginTop: 10,
   },
   title: {
     color: '#5E548E',
     fontSize: 16,
-    marginBottom: 12,
-    textAlign: 'center',
+    marginBottom: 5,
   },
   rateBadge: {
     backgroundColor: '#0F2573',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    marginVertical: 10,
+    paddingHorizontal: 10,
   },
-  rateBadgeText: {
-    color: 'white',
-    fontSize: 14,
+  ratingContainer: {
+    flexDirection: 'row',
+    marginTop: 5,
   },
   section: {
-    marginBottom: 24,
-    width: '100%',
+    marginBottom: 20,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#0F2573',
-    marginBottom: 12,
+    color: '#5E548E',
+    marginBottom: 8,
   },
   skillsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
   skillBadge: {
-    backgroundColor: '#D1E0FF',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    marginRight: 8,
-    marginBottom: 8,
+    marginRight: 5,
+    marginBottom: 5,
+    backgroundColor: '#0F2573',
   },
-  skillText: {
-    color: '#0F2573',
-    fontSize: 14,
-  },
-  list: {
-    marginLeft: 8,
-  },
-  listItem: {
-    marginBottom: 8,
+  fieldValue: {
     fontSize: 16,
-    lineHeight: 24,
+    color: '#333',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  portfolioTitle: {
-    fontWeight: 'bold',
+  chatButton: {
+    borderRadius: 8,
+    backgroundColor: '#4CAF50',
+    marginTop: 10,
+    paddingVertical: 6,
   },
-  link: {
-    color: '#0F2573',
-    textDecorationLine: 'underline',
+  buttonLabel: {
+    color: 'white',
+    fontSize: 16,
   },
   modalContainer: {
+    flex: 1,
     backgroundColor: 'white',
-    padding: 20,
-    margin: 20,
-    borderRadius: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 20,
     color: '#0F2573',
-    textAlign: 'center',
   },
-  input: {
-    marginBottom: 16,
+  modalContent: {
+    padding: 16,
   },
-  imageButton: {
-    marginBottom: 16,
-  },
-  modalButtons: {
+  modalFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 16,
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
   },
-  saveButton: {
-    marginLeft: 8,
-    backgroundColor: '#0F2573',
+  formGroup: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 6,
+    fontWeight: '500',
+  },
+  input: {
+    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: 'top',
   },
   cancelButton: {
-    marginLeft: 8,
+    marginRight: 10,
+    borderColor: '#0F2573',
+  },
+  cancelButtonLabel: {
+    color: '#0F2573',
+  },
+  saveButton: {
+    backgroundColor: '#0F2573',
+    minWidth: 120,
   },
 });
 

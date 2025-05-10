@@ -1,161 +1,207 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 
-const ProfilClient = ({ navigation }) => {  // Ajout de navigation dans les props
+const ProfilClient = ({ navigation, route }) => {
+  const isExternalView = route.params?.isExternalView || false;
   const [profile, setProfile] = useState({
+    id: 'client123',
     companyName: '',
     companyDescription: '',
     clientNeeds: '',
-    rating: 0
+    rating: 0,
+    email: '',
+    phone: '',
+    location: ''
   });
 
   const [editedProfile, setEditedProfile] = useState({ ...profile });
   const [modalVisible, setModalVisible] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        // Simulation de chargement des données
+        setTimeout(() => {
+          setProfile({
+            id: 'client123',
+            companyName: 'Tech Solutions Inc.',
+            companyDescription: 'We provide innovative tech solutions for businesses of all sizes.',
+            clientNeeds: 'Looking for experienced React Native developers',
+            rating: 4,
+            email: 'contact@techsolutions.com',
+            phone: '+1 555-123-4567',
+            location: 'Tunis, Tunisia'
+          });
+          setEditedProfile({
+            companyName: 'Tech Solutions Inc.',
+            companyDescription: 'We provide innovative tech solutions for businesses of all sizes.',
+            clientNeeds: 'Looking for experienced React Native developers',
+            rating: 4,
+            email: 'contact@techsolutions.com',
+            phone: '+1 555-123-4567',
+            location: 'Tunis, Tunisia'
+          });
+          setIsLoading(false);
+        }, 1000);
+      } catch (error) {
+        Alert.alert('Error', 'Failed to load profile data');
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
 
   const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'We need access to your photos to change your profile image');
+      return;
+    }
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+      aspect: [1, 1],
+      quality: 0.8,
     });
 
-    if (!result.cancelled) {
-      setProfileImage(result.uri);
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
     }
   };
 
-  const openEditProfileModal = () => {
-    setEditedProfile({ ...profile });
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-  };
-
-  const saveProfile = () => {
-    setProfile({ ...editedProfile });
-    setModalVisible(false);
-  };
-
-  const renderStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <MaterialIcons
-          key={i}
-          name={i <= rating ? 'star' : 'star-border'}
-          size={24}
-          color={i <= rating ? '#FFD700' : '#ccc'}
-          onPress={() => {
-            setEditedProfile({...editedProfile, rating: i});
-          }}
-        />
-      );
+  const handleSaveProfile = async () => {
+    setIsLoading(true);
+    try {
+      // Simulation de sauvegarde
+      setTimeout(() => {
+        setProfile(editedProfile);
+        setModalVisible(false);
+        Alert.alert('Success', 'Profile updated successfully');
+        setIsLoading(false);
+      }, 1000);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update profile');
+      setIsLoading(false);
     }
-    return stars;
   };
+
+  const handleStartChat = () => {
+    navigation.navigate('Inbox', { 
+      recipientId: freelance.id,
+      recipientName: `${freelance.user.name} ${freelance.user.lastName}`,
+      isFreelancer: true
+    });
+  };
+
+  const renderStars = (rating, editable = false) => {
+    return Array(5).fill(0).map((_, i) => (
+      <MaterialIcons
+        key={i}
+        name={i < rating ? 'star' : 'star-border'}
+        size={24}
+        color={i < rating ? '#FFD700' : '#ccc'}
+        onPress={editable ? () => {
+          setEditedProfile({...editedProfile, rating: i + 1});
+        } : null}
+      />
+    ));
+  };
+
+  const renderField = (label, value, isLast = false) => (
+    <View style={[styles.formGroup, isLast && { marginBottom: 0 }]}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.fieldValue}>{value || 'Not specified'}</Text>
+    </View>
+  );
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading profile...</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header avec bouton de retour et titre */}
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <MaterialIcons name="arrow-back" size={24} color="#0F2573" />
         </TouchableOpacity>
         <Text style={styles.pageTitle}>👤 Client Profile</Text>
-        <View style={styles.headerSpacer} /> {/* Pour centrer le titre */}
+        <View style={styles.headerSpacer} />
       </View>
 
-      {/* Client Information Card */}
       <View style={styles.profileCard}>
-        <Text style={styles.sectionTitle}>Client Information</Text>
-        
-        {/* Photo de profil centrée avec option de modification */}
         <View style={styles.avatarContainer}>
-          {profileImage ? (
-            <TouchableOpacity onPress={pickImage}>
+          <TouchableOpacity onPress={pickImage}>
+            {profileImage ? (
               <Image source={{ uri: profileImage }} style={styles.profileImage} />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity onPress={pickImage} style={styles.avatarPlaceholder}>
-              <MaterialIcons name="add-a-photo" size={40} color="#5E548E" />
-            </TouchableOpacity>
-          )}
+            ) : (
+              <View style={styles.avatarPlaceholder}>
+                <MaterialIcons name="add-a-photo" size={40} color="#5E548E" />
+              </View>
+            )}
+          </TouchableOpacity>
           
-          {/* Évaluation par étoiles */}
           <View style={styles.ratingContainer}>
             {renderStars(profile.rating)}
           </View>
         </View>
 
-        {/* Champs de saisie */}
-        <View style={styles.formContainer}>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Company Name</Text>
-            <TextInput
-              style={styles.input}
-              value={profile.companyName}
-              placeholder="Not specified"
-              editable={false}
-            />
-          </View>
+        {renderField('Company Name', profile.companyName)}
+        {renderField('Email', profile.email)}
+        {renderField('Phone', profile.phone)}
+        {renderField('Location', profile.location)}
+        {renderField('Company Description', profile.companyDescription)}
+        {renderField('Client Needs', profile.clientNeeds, true)}
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Company Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={profile.companyDescription}
-              placeholder="Not specified"
-              multiline
-              numberOfLines={5}
-              editable={false}
-            />
-          </View>
-
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Client Needs</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              value={profile.clientNeeds}
-              placeholder="Not specified"
-              multiline
-              numberOfLines={5}
-              editable={false}
-            />
-          </View>
-        </View>
-
-        {/* Bouton en bas de la carte */}
-        <View style={styles.buttonContainer}>
+        {!isExternalView && (
           <Button 
             mode="contained" 
-            onPress={openEditProfileModal}
+            onPress={() => {
+              setEditedProfile(profile);
+              setModalVisible(true);
+            }}
             style={styles.editButton}
             labelStyle={styles.buttonLabel}
+            loading={isLoading}
           >
-            {profile.companyName ? 'Modify Profile' : 'Create Profile'}
+            Edit Profile
           </Button>
-        </View>
+        )}
+
+        {isExternalView && (
+          <Button 
+            mode="contained" 
+            onPress={handleStartChat}
+            style={styles.chatButton}
+            labelStyle={styles.buttonLabel}
+            icon="message"
+          >
+            Send Message
+          </Button>
+        )}
       </View>
 
-      {/* Edit Profile Modal */}
       <Modal
         animationType="slide"
         transparent={false}
         visible={modalVisible}
-        onRequestClose={closeModal}
+        onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{profile.companyName ? 'Edit Profile' : 'Create Profile'}</Text>
-            <TouchableOpacity onPress={closeModal}>
-              <Text style={styles.closeButton}>×</Text>
+            <Text style={styles.modalTitle}>Edit Profile</Text>
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <MaterialIcons name="close" size={24} color="#999" />
             </TouchableOpacity>
           </View>
 
@@ -166,7 +212,39 @@ const ProfilClient = ({ navigation }) => {  // Ajout de navigation dans les prop
                 style={styles.input}
                 value={editedProfile.companyName}
                 onChangeText={(text) => setEditedProfile({...editedProfile, companyName: text})}
-                placeholder="Enter your company name"
+                placeholder="Enter company name"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.email}
+                onChangeText={(text) => setEditedProfile({...editedProfile, email: text})}
+                placeholder="Enter email"
+                keyboardType="email-address"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Phone</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.phone}
+                onChangeText={(text) => setEditedProfile({...editedProfile, phone: text})}
+                placeholder="Enter phone number"
+                keyboardType="phone-pad"
+              />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Location</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.location}
+                onChangeText={(text) => setEditedProfile({...editedProfile, location: text})}
+                placeholder="Enter location"
               />
             </View>
 
@@ -176,9 +254,9 @@ const ProfilClient = ({ navigation }) => {  // Ajout de navigation dans les prop
                 style={[styles.input, styles.textArea]}
                 value={editedProfile.companyDescription}
                 onChangeText={(text) => setEditedProfile({...editedProfile, companyDescription: text})}
-                placeholder="Enter a description of your company"
+                placeholder="Describe your company"
                 multiline
-                numberOfLines={5}
+                numberOfLines={4}
               />
             </View>
 
@@ -188,30 +266,39 @@ const ProfilClient = ({ navigation }) => {  // Ajout de navigation dans les prop
                 style={[styles.input, styles.textArea]}
                 value={editedProfile.clientNeeds}
                 onChangeText={(text) => setEditedProfile({...editedProfile, clientNeeds: text})}
-                placeholder="Enter your needs"
+                placeholder="Describe your needs"
                 multiline
-                numberOfLines={5}
+                numberOfLines={4}
               />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Rating</Text>
+              <View style={styles.ratingContainer}>
+                {renderStars(editedProfile.rating, true)}
+              </View>
             </View>
           </ScrollView>
 
           <View style={styles.modalFooter}>
             <Button 
               mode="outlined" 
-              onPress={closeModal}
+              onPress={() => setModalVisible(false)}
               style={styles.cancelButton}
               labelStyle={styles.cancelButtonLabel}
-              color="#041D56"
+              disabled={isLoading}
             >
               Cancel
             </Button>
             <Button 
               mode="contained" 
-              onPress={saveProfile}
+              onPress={handleSaveProfile}
               style={styles.saveButton}
               labelStyle={styles.buttonLabel}
+              loading={isLoading}
+              disabled={isLoading}
             >
-              Save
+              Save Changes
             </Button>
           </View>
         </View>
@@ -223,45 +310,43 @@ const ProfilClient = ({ navigation }) => {  // Ajout de navigation dans les prop
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  contentContainer: {
+    padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   backButton: {
     padding: 8,
   },
   headerSpacer: {
-    width: 24, // Même largeur que le bouton de retour pour centrer le titre
+    width: 24,
   },
   pageTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#0F2573',
-    textAlign: 'center',
     flex: 1,
+    textAlign: 'center',
   },
   profileCard: {
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 20,
+    borderRadius: 12,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 6,
     elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    color: '#5E548E',
-    fontWeight: '500',
-    marginBottom: 20,
-    textAlign: 'center',
   },
   avatarContainer: {
     alignItems: 'center',
@@ -271,7 +356,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    marginBottom: 15,
+    marginBottom: 10,
   },
   avatarPlaceholder: {
     width: 120,
@@ -280,44 +365,56 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   ratingContainer: {
     flexDirection: 'row',
-    marginBottom: 15,
-  },
-  formContainer: {
-    width: '100%',
+    justifyContent: 'center',
+    marginTop: 5,
   },
   formGroup: {
-    marginBottom: 15,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
-    color: '#333',
-    marginBottom: 5,
+    color: '#666',
+    marginBottom: 6,
     fontWeight: '500',
+  },
+  fieldValue: {
+    fontSize: 16,
+    color: '#333',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   input: {
     backgroundColor: '#f9f9f9',
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 5,
+    borderRadius: 8,
     padding: 12,
-    fontSize: 14,
+    fontSize: 16,
   },
   textArea: {
-    height: 100,
+    minHeight: 100,
     textAlignVertical: 'top',
   },
-  buttonContainer: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
   editButton: {
-    borderRadius: 20,
+    borderRadius: 8,
     backgroundColor: '#0F2573',
-    width: '60%',
+    marginTop: 20,
+    paddingVertical: 6,
+  },
+  chatButton: {
+    borderRadius: 8,
+    backgroundColor: '#4CAF50',
+    marginTop: 10,
+    paddingVertical: 6,
+  },
+  buttonLabel: {
+    color: 'white',
+    fontSize: 16,
   },
   modalContainer: {
     flex: 1,
@@ -327,7 +424,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
@@ -336,17 +433,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0F2573',
   },
-  closeButton: {
-    fontSize: 24,
-    color: '#999',
-  },
   modalContent: {
-    padding: 20,
+    padding: 16,
   },
   modalFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    padding: 15,
+    padding: 16,
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
@@ -355,13 +448,11 @@ const styles = StyleSheet.create({
     borderColor: '#0F2573',
   },
   cancelButtonLabel: {
-    color: '#041D56',
+    color: '#0F2573',
   },
   saveButton: {
     backgroundColor: '#0F2573',
-  },
-  buttonLabel: {
-    color: 'white',
+    minWidth: 120,
   },
 });
 

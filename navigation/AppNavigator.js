@@ -15,7 +15,7 @@ import SplashScreen from "../SplashScreen";
 import ProfilClient from "../ProfilClient";
 import ProjectManagement from "../ProjectManagement";
 import projectlist from "../projectlist";
-import Freelancers from "../freelancers";
+import Freelancers from "../Freelancers";
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
