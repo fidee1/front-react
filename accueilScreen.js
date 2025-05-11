@@ -92,7 +92,7 @@ function SidebarNav() {
     { name: "My Project", route: "MyProject", icon: "folder-outline" },
     { name: "Claim", route: "Claim", icon: "library-outline" },
     { name: "Invoices", route: "Invoices", icon: "cash-outline" },
-    { name: "Inbox", route: "Inbox", icon: "mail-outline" },
+    { name: "Inbox", route: "Inbox", icon: "chatbubbles-outline" },
     { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout },
   ];
 
@@ -102,7 +102,7 @@ function SidebarNav() {
     { name: "Project Management", route: "ProjectManagement", icon: "construct-outline" },
     { name: "Claim", route: "Claim", icon: "library-outline" },
     { name: "Project List", route: "projectlist", icon: "list-outline" },
-    { name: "Inbox", route: "Inbox", icon: "mail-outline" },
+    { name: "Inbox", route: "Inbox", icon: "chatbubbles-outline" },
     { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout },
     { name: "Freelancers", route: "Freelancers", icon: "people-outline" }
   ];
@@ -358,7 +358,7 @@ function SidebarNav() {
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("Inbox")}
             >
-              <Ionicons name="mail-outline" size={20} color="#041D56" />
+              <Ionicons name="chatbubbles-outline" size={20} color="#041D56" />
               <Text style={styles.bottomNavText}>Inbox</Text>
             </TouchableOpacity>
 
@@ -410,6 +410,65 @@ function SidebarNav() {
             </TouchableOpacity>
           </View>
         )}
+  {userRole === "freelancer" && (
+  <View style={styles.bottomSidebar}>
+    <TouchableOpacity 
+      style={styles.bottomNavItem} 
+      onPress={() => navigation.navigate("ListOfOffers")}
+    >
+      <Ionicons name="briefcase-outline" size={20} color="#041D56" />
+      <Text style={styles.bottomNavText}>Offers</Text>
+    </TouchableOpacity>
+    <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("Claim")}
+            >
+              <Ionicons name="library-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Claim</Text>
+            </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.bottomNavItem} 
+      onPress={() => navigation.navigate("MyProject")}
+    >
+      <Ionicons name="folder-outline" size={20} color="#041D56" />
+      <Text style={styles.bottomNavText}>Projects</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity 
+      style={styles.centralButton} 
+      onPress={() => navigation.navigate("Profile")}
+    >
+      <Ionicons name="person-outline" size={32} color="#FFF" />
+    </TouchableOpacity>
+
+    <TouchableOpacity 
+      style={styles.bottomNavItem} 
+      onPress={() => navigation.navigate("Inbox")}
+    >
+      <Ionicons name="chatbubbles-outline" size={20} color="#041D56" />
+      <Text style={styles.bottomNavText}>Inbox</Text>
+    </TouchableOpacity>
+    <TouchableOpacity 
+              style={styles.bottomNavItem} 
+              onPress={() => navigation.navigate("Invoices")}
+            >
+              <Ionicons name="cash-outline" size={20} color="#041D56" />
+              <Text style={styles.bottomNavText}>Invoices</Text>
+            </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.bottomNavItem} 
+      onPress={handleLogout}
+    >
+      <Ionicons name="log-out-outline" size={20} color="#041D56" />
+      <Text style={styles.bottomNavText}>Logout</Text>
+    </TouchableOpacity>
+    
+
+            
+  </View>
+)}
+
+
       </View>
     </View>
   );
@@ -710,6 +769,45 @@ const styles = StyleSheet.create({
     color: '#041D56',
     fontWeight: 'bold',
     marginRight: 5,
+  },
+  bottomSidebar: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#F9F9F9",
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#E0E0E0",
+    position: "absolute", // Assure que la barre est positionnée de manière absolue
+    bottom: 0, // La place au bas de l'écran
+    width: "100%", // Étire la barre sur toute la largeur de l'écran
+    zIndex: 10, // S'assure qu'elle reste au-dessus des autres éléments
+  },
+  bottomNavItem: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
+  bottomNavText: {
+    fontSize: 12,
+    color: "#041D56",
+    marginTop: 2,
+    textAlign: "center",
+  },
+  centralButton: {
+    width: 60,
+    height: 60,
+    backgroundColor: "#041D56",
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 5,
+    elevation: 5,
+    position: "relative",
+    bottom: 20, // Légèrement surélevé par rapport à la barre
   },
 });
 
