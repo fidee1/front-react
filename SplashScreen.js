@@ -1,16 +1,19 @@
 import React from 'react';
-import { ImageBackground, StyleSheet, View, Text } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons'; // Assurez-vous que cette bibliothèque est installée
+import { StyleSheet, View, Image, ImageBackground } from 'react-native';
 
 const SplashScreen = () => {
   return (
     <ImageBackground
-      source={require('./assets/images/sp.jpg')}
+      source={require('./assets/images/bb.jpg')} // Image de fond
       style={styles.background}
+      resizeMode="cover" // Assure que l'image de fond couvre tout l'écran
     >
-      <View style={styles.contentContainer}>
-        <FontAwesome5 name="laptop-code" size={50} color="#000000" solid />
-        <Text style={styles.title}>Freelancy</Text>
+      <View style={styles.overlay}> {/* Conteneur pour le logo, centré sur le fond */}
+        <Image
+          source={require('./assets/images/logoo.jpg')} // Logo
+          style={styles.logo}
+          resizeMode="contain" // Assure que toute l'image du logo est visible
+        />
       </View>
     </ImageBackground>
   );
@@ -19,23 +22,26 @@ const SplashScreen = () => {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    resizeMode: 'cover', // Assure que l'image couvre tout l'écran
-    justifyContent: 'center',
-    alignItems: 'center', // Centre le contenu sur l'écran
-  },
-  contentContainer: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    marginTop: 10,
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#000000',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)', // Ombre légère pour le texte
-    textShadowOffset: { width: 2, height: 2 },
-    textShadowRadius: 5,
+  overlay: {
+    // Ce conteneur est déjà centré par le style 'background'
+    // Pas besoin de flex: 1 ici, car il ne contient que le logo
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logo: {
+    width: 200, // Ajustez la taille du logo selon vos besoins
+    height: 200, // Ajustez la taille du logo selon vos besoins
+    // Si votre logo a des dimensions spécifiques, vous pouvez les définir ici
+    // Par exemple, si logoo.png fait 250x150 pixels:
+    // width: 250,
+    // height: 150,
   },
 });
 
 export default SplashScreen;
+

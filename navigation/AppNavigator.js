@@ -26,7 +26,7 @@ export default function AppNavigator() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSplashVisible(false); // Cache la SplashScreen après 3 secondes
-    },5000)
+    },8000)
     return () => clearTimeout(timer); // Nettoie le timer
   }, []);
 
