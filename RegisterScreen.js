@@ -50,7 +50,7 @@ export default function RegisterScreen({ navigation }) {
       password,
       role,
     };
-  
+    
     // Vérification des données avant l'envoi
     console.log("Données envoyées : ", userData);
     dispatch(

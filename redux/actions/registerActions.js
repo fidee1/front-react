@@ -40,4 +40,9 @@ export const register = (userData, onSuccess, onFailure) => async (dispatch) => 
     dispatch(registerFailure(errorMsg));
     if (onFailure) onFailure(errorMsg);
   }
+  
 };
+
+export const clearUser = () => ({
+  type: 'CLEAR_USER'
+});
