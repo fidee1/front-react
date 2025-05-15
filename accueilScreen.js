@@ -18,7 +18,9 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { logout } from "./authSlice";
 import api from "./api";
-
+import Constants from 'expo-constants';
+import { Platform, StatusBar } from 'react-native';
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
 function SidebarNav() {
   const [showForm, setShowForm] = useState(false);
   const [projectTitle, setProjectTitle] = useState("");
@@ -114,9 +116,8 @@ function SidebarNav() {
     const updateAccueilScreenData = async () => {
       if (token && user?.id) {
         try {
-          const response = await api.put(
-            `/acceuilScreen/${user.id}`,
-            {},
+                    const response = await api.get(
+            `/accueilScreen/${user.id}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -124,6 +125,7 @@ function SidebarNav() {
               },
             }
           );
+
           setData(response.data);
         } catch (error) {
           console.error("Erreur lors de l'appel API :", error.response || error.message);
@@ -246,64 +248,99 @@ function SidebarNav() {
 
         {/* Barre latérale en bas pour le client */}
         {userRole === "client" && (
-          <View style={styles.bottomSidebar}>
-            <TouchableOpacity 
-              style={styles.bottomNavItem} 
-              onPress={() => navigation.navigate("Inbox")}
-            >
-              <Ionicons name="chatbubbles-outline" size={18} color="#041D56" />
-              <Text style={styles.bottomNavText}>Inbox</Text>
-            </TouchableOpacity>
+  <View style={[styles.bottomSidebar, {bottom: Constants.statusBarHeight + 10}]}>
+    <TouchableOpacity 
+      style={styles.bottomNavItem}
+      onPress={() => navigation.navigate("Inbox")}
+    >
+      <Ionicons name="chatbubbles-outline" size={16} color="#041D56" />
+      <Text 
+        style={[styles.bottomNavText, { fontSize: 10 }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={false}
+      >
+        Inbox
+      </Text>
+    </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.bottomNavItem} 
-              onPress={() => navigation.navigate("projectlist")}
-            >
-              <Ionicons name="list-outline" size={18} color="#041D56" />
-              <Text style={styles.bottomNavText}>Projects</Text>
-            </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.bottomNavItem}
+      onPress={() => navigation.navigate("projectlist")}
+    >
+      <Ionicons name="list-outline" size={16} color="#041D56" />
+      <Text 
+        style={[styles.bottomNavText, { fontSize: 10}]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={false}
+      >
+        Projects
+      </Text>
+    </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.bottomNavItem} 
-              onPress={() => navigation.navigate("Freelancers")}
-            >
-              <Ionicons name="people-outline" size={18} color="#041D56" />
-              <Text style={styles.bottomNavText}>Freelancers</Text>
-            </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.bottomNavItem}
+      onPress={() => navigation.navigate("Freelancers")}
+    >
+      <Ionicons name="people-outline" size={16} color="#041D56" />
+      <Text 
+        style={[styles.bottomNavText, { fontSize: 10 }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={false}
+      >
+        Freelancers
+      </Text>
+    </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.centralButton} 
-              onPress={() => setShowForm(true)}
-            >
-              <Ionicons name="add" size={32} color="#FFF" />
-            </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.centralButton} 
+      onPress={() => setShowForm(true)}
+    >
+      <Ionicons name="add" size={24} color="#FFF" />
+    </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.bottomNavItem} 
-              onPress={() => navigation.navigate("ProjectManagement")}
-            >
-              <Ionicons name="construct-outline" size={18} color="#041D56" />
-              <Text style={styles.bottomNavText}>Manage</Text>
-            </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.bottomNavItem}
+      onPress={() => navigation.navigate("ProjectManagement")}
+    >
+      <Ionicons name="construct-outline" size={16} color="#041D56" />
+      <Text 
+        style={[styles.bottomNavText, { fontSize: 10 }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={false}
+      >
+        Manage
+      </Text>
+    </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.bottomNavItem} 
-              onPress={() => navigation.navigate("Invoices")}
-            >
-              <Ionicons name="cash-outline" size={18} color="#041D56" />
-              <Text style={styles.bottomNavText}>Invoices</Text>
-            </TouchableOpacity>
+    <TouchableOpacity 
+      style={styles.bottomNavItem}
+      onPress={() => navigation.navigate("Invoices")}
+    >
+      <Ionicons name="cash-outline" size={16} color="#041D56" />
+      <Text 
+        style={[styles.bottomNavText, { fontSize: 10 }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={false}
+      >
+        Invoices
+      </Text>
+    </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.bottomNavItem} 
-              onPress={() => navigation.navigate("Claim")}
-            >
-              <Ionicons name="library-outline" size={18} color="#041D56" />
-              <Text style={styles.bottomNavText}>Claim</Text>
-              
-            </TouchableOpacity>
-          </View>
-        )}
+    <TouchableOpacity 
+      style={styles.bottomNavItem}
+      onPress={() => navigation.navigate("Claim")}
+    >
+      <Ionicons name="library-outline" size={16} color="#041D56" />
+      <Text 
+        style={[styles.bottomNavText, { fontSize: 10 }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit={false}
+      >
+        Claim
+      </Text>
+    </TouchableOpacity>
+  </View>
+)}
   {userRole === "freelancer" && (
   <View style={styles.bottomSidebar}>
     <TouchableOpacity 
@@ -423,8 +460,8 @@ const styles = StyleSheet.create({
   },
   logo: {
     width: 120,
-    height: 80,
-    marginTop: -10,
+    height: 100,
+    marginTop: 10,
   },
 
   navItem: {
@@ -454,12 +491,12 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: "absolute",
-    top: 0,
+    top: 15,
     right: 10,
     zIndex: 20,
   },
   closeButtonText: {
-    fontSize: 20,
+    fontSize: 30,
     color: "#00000",
     fontWeight: "bold",
   },
@@ -488,7 +525,7 @@ const styles = StyleSheet.create({
   },
     bottomSidebar: {
     position: 'absolute',
-    bottom: 0,
+    bottom: statusBarHeight + 10,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -497,9 +534,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderTopWidth: 1,
     borderTopColor: '#ccc',
-    paddingVertical: 6,  // Légèrement réduit
+    paddingVertical: 6,
     paddingHorizontal: 5,
-    height: 60,  // Hauteur totale réduite
+    height: 60,
+    zIndex: 100,
+    marginHorizontal: 10,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 5,
   },
   
   bottomNavItem: {
@@ -522,11 +567,23 @@ const styles = StyleSheet.create({
   },
   
   bottomNavText: {
-    fontSize: 9,    // Taille augmentée pour meilleure lisibilité (au lieu de 7)
-    color: '#041D56',
-    marginTop: 2,   // Espacement réduit
-    textAlign: 'center',
-    fontWeight: '500', // Ajouté pour améliorer la lisibilité
+    fontSize: 8, // Taille fixe en pixels
+    color: "#041D56",
+    marginTop: 2,
+    textAlign: "center",
+    includeFontPadding: false, // Essential
+    textAlignVertical: 'center', // Pour Android
+    allowFontScaling: false, // Bloque l'ajustement automatique
+    lineHeight: 10, // Doit être légèrement > que fontSize
+    fontWeight: 'normal', // Évitez 'bold' qui prend plus de place
+  },
+  
+  // Style à appliquer sur le conteneur parent si nécessaire
+  bottomNavItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40, // Hauteur fixe
+    paddingVertical: 0, // Supprime tout padding vertical
   },
   
   // Ajoutez ce style pour les icônes
@@ -558,7 +615,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowObpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },
