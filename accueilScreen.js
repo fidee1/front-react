@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Alert,
+  Image,
   Button,
   TextInput,
   Modal,
@@ -151,15 +152,18 @@ function SidebarNav() {
     <View style={[styles.container, { backgroundColor: userRole === "freelancer" || userRole === "client" ? "#FFF" : "transparent" }]}>
       <View style={styles.mainContainer}>
         <View style={styles.globalHeader}>
-          <FontAwesome5 name="laptop-code" size={28} style={styles.globalHeaderIcon} />
-          <Text style={styles.globalHeaderTitle}>Freelancy</Text>
-        </View>
+      <Image
+        source={require('./assets/images/logoo.jpg')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+    </View>
   
         <TouchableOpacity
           style={styles.menuButton}
           onPress={() => setIsSidebarVisible(!isSidebarVisible)}
         >
-          <FontAwesome5 name="bars" size={28} color="#ADE1FB" />
+          <FontAwesome5 name="bars" size={28} color="#00000" />
         </TouchableOpacity>
   
         {isSidebarVisible && (
@@ -171,8 +175,11 @@ function SidebarNav() {
         {isSidebarVisible && (
           <View style={styles.sidebar}>
             <View style={styles.sidebarHeader}>
-              <FontAwesome5 name="laptop-code" size={28} style={styles.headerIcon} />
-              <Text style={styles.sidebarTitle}>Freelancy</Text>
+              <Image
+              source={require('./assets/images/logoo.jpg')}
+               style={styles.logo}
+              resizeMode="contain"
+              />
             </View>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
               {navItems.map(renderNavItem)}
@@ -229,8 +236,6 @@ function SidebarNav() {
                   </TouchableOpacity>
                 </ScrollView>
               </View>
-
-              
             </>
           ) : (
             <Text style={styles.roleText}>
@@ -246,7 +251,7 @@ function SidebarNav() {
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("Inbox")}
             >
-              <Ionicons name="chatbubbles-outline" size={20} color="#041D56" />
+              <Ionicons name="chatbubbles-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Inbox</Text>
             </TouchableOpacity>
 
@@ -254,7 +259,7 @@ function SidebarNav() {
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("projectlist")}
             >
-              <Ionicons name="list-outline" size={20} color="#041D56" />
+              <Ionicons name="list-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Projects</Text>
             </TouchableOpacity>
 
@@ -262,7 +267,7 @@ function SidebarNav() {
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("Freelancers")}
             >
-              <Ionicons name="people-outline" size={20} color="#041D56" />
+              <Ionicons name="people-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Freelancers</Text>
             </TouchableOpacity>
 
@@ -277,7 +282,7 @@ function SidebarNav() {
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("ProjectManagement")}
             >
-              <Ionicons name="construct-outline" size={20} color="#041D56" />
+              <Ionicons name="construct-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Manage</Text>
             </TouchableOpacity>
 
@@ -285,7 +290,7 @@ function SidebarNav() {
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("Invoices")}
             >
-              <Ionicons name="cash-outline" size={20} color="#041D56" />
+              <Ionicons name="cash-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Invoices</Text>
             </TouchableOpacity>
 
@@ -293,8 +298,9 @@ function SidebarNav() {
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("Claim")}
             >
-              <Ionicons name="library-outline" size={20} color="#041D56" />
+              <Ionicons name="library-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Claim</Text>
+              
             </TouchableOpacity>
           </View>
         )}
@@ -347,7 +353,7 @@ function SidebarNav() {
       style={styles.bottomNavItem} 
       onPress={handleLogout}
     >
-      <Ionicons name="log-out-outline" size={20} color="#041D56" />
+      <Ionicons name="log-out-outline" size={18} color="#041D56" />
       <Text style={styles.bottomNavText}>Logout</Text>
     </TouchableOpacity>
     
@@ -378,20 +384,19 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   globalHeader: {
-    flexDirection: "column",
     alignItems: "center",
-    marginTop: 40,
-    marginBottom: 20,
+    justifyContent: "center",
+    paddingTop: 20,
+    paddingBottom: 20,
+    backgroundColor: "#FFF",
   },
-  globalHeaderIcon: {
-    color: "#266CA9",
+  logo: {
+    width: 100,
+    height: 100,
     marginBottom: 5,
+    marginTop: -5,
   },
-  globalHeaderTitle: {
-    color: "#266CA9",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
+  
   menuButton: {
     position: "absolute",
     top: 40,
@@ -403,43 +408,40 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: 150,
-    height: "100%",
-    backgroundColor: "#ADE1FB",
+    height: "99%",
+    backgroundColor: "#FFFFFF",
     paddingVertical: 20,
     zIndex: 20,
-    paddingTop: 30,
+    paddingTop: 20,
   },
   sidebarHeader: {
-    flexDirection: "column",
     alignItems: "center",
-    marginBottom: 50,
+    justifyContent: "center",
+    paddingVertical: 15,
+    marginBottom: 20,
+    backgroundColor: "#FFFFFF", // Fond blanc pour le header
   },
-  headerIcon: {
-    color: "#266CA9",
-    marginBottom: 2,
+  logo: {
+    width: 120,
+    height: 80,
+    marginTop: -10,
   },
-  sidebarTitle: {
-    color: "#266CA9",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
+
   navItem: {
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
     marginHorizontal: 10,
     marginVertical: 5,
-    backgroundColor: "white",
+    backgroundColor: "#041D56", // Fond noir pour les items
     borderRadius: 8,
   },
+
   navText: {
     marginLeft: 15,
-    color: "#041D56",
+    color: "#FFFFFF", // Texte en blanc
     fontSize: 12,
     fontWeight: "500",
-  },
-  icon: {
-    color: "#041D56",
   },
   overlay: {
     position: "absolute",
@@ -458,7 +460,7 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     fontSize: 20,
-    color: "#FFF",
+    color: "#00000",
     fontWeight: "bold",
   },
   modalContent: {
@@ -484,7 +486,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
   },
-  bottomSidebar: {
+    bottomSidebar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -495,31 +497,41 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderTopWidth: 1,
     borderTopColor: '#ccc',
-    paddingVertical: 10,
+    paddingVertical: 6,  // Légèrement réduit
     paddingHorizontal: 5,
-    height: 80,
+    height: 60,  // Hauteur totale réduite
   },
+  
   bottomNavItem: {
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    minWidth: 50,
+    minWidth: 45,  // Largeur minimale réduite
+    padding: 2,    // Padding intérieur réduit
   },
+  
   centralButton: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#041D56',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginTop: -30,
-    elevation: 5,
+    width: 50,      // Taille réduite
+    height: 50,     // Taille réduite
+    borderRadius: 25,
+    marginTop: -25, // Ajusté en fonction de la nouvelle taille
+    elevation: 4,   // Ombre légèrement réduite
   },
+  
   bottomNavText: {
-    fontSize: 9,
+    fontSize: 9,    // Taille augmentée pour meilleure lisibilité (au lieu de 7)
     color: '#041D56',
-    marginTop: 5,
+    marginTop: 2,   // Espacement réduit
     textAlign: 'center',
+    fontWeight: '500', // Ajouté pour améliorer la lisibilité
+  },
+  
+  // Ajoutez ce style pour les icônes
+  bottomNavIcon: {
+    fontSize: 18,   // Taille réduite des icônes (standard: 20-24)
   },
   // Nouveaux styles pour la section freelancers
   freelancersSection: {
