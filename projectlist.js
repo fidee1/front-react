@@ -158,7 +158,7 @@ const projectlist = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8FAFF',
+    backgroundColor: '#0F2573',
   },
   container: {
     flex: 1,

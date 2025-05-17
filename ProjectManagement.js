@@ -13,7 +13,8 @@ import {
   SafeAreaView,
   StatusBar
 } from 'react-native';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons, AntDesign } from '@expo/vector-icons';
+import { useSelector } from 'react-redux'; // Pour accéder au state Redux
 
 const ProjectManagement = ({ navigation }) => {
   const [search, setSearch] = useState('');
@@ -22,6 +23,9 @@ const ProjectManagement = ({ navigation }) => {
   const [tempRating, setTempRating] = useState(0);
   const [selectedProject, setSelectedProject] = useState(null);
   const [projects, setProjects] = useState([]);
+  
+  // Récupérer le rôle de l'utilisateur depuis le state Redux
+  const userRole = useSelector(state => state.auth?.role) || 'client'; // Par défaut 'client' pour le test
 
   useEffect(() => {
     fetchProjects();
@@ -123,6 +127,11 @@ const ProjectManagement = ({ navigation }) => {
     }
   };
 
+  // Fonction pour naviguer vers la page de création de projet
+  const navigateToAddProject = () => {
+    navigation.navigate('AddProject');
+  };
+
   const renderProjectItem = ({ item }) => (
     <View style={styles.projectCard}>
       <View style={styles.projectHeader}>
@@ -207,6 +216,17 @@ const ProjectManagement = ({ navigation }) => {
             <MaterialIcons name="arrow-drop-down" size={20} color="#7D9FC7" />
           </View>
         </View>
+        
+        {/* Bouton Add Project - visible uniquement pour les clients */}
+        {userRole === 'client' && (
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={navigateToAddProject}
+          >
+            <AntDesign name="plus" size={20} color="white" />
+            <Text style={styles.addButtonText}>Add Project</Text>
+          </TouchableOpacity>
+        )}
         
         {filteredProjects.length > 0 ? (
           <FlatList
@@ -339,6 +359,25 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#041D56',
     fontSize: 10,
+  },
+  // Style pour le bouton Add Project
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#266CA9',
+    borderRadius: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    marginHorizontal: 15,
+    marginBottom: 15,
+    elevation: 3,
+  },
+  addButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
   listContainer: {
     padding: 15,

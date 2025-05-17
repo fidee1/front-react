@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import api from "./api"; // Assurez-vous que ce chemin est correct et que api est configuré
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Action asynchrone pour le login
 export const loginUser = createAsyncThunk(
@@ -8,15 +9,21 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await api.post("/login", { email, password });
       console.log("Réponse de l'API /login :", response.data);
-      // Idéalement, votre API /login devrait aussi renvoyer l'objet utilisateur
+      
+      // Stockage du token dans AsyncStorage pour les futures requêtes API
+      if (response.data.token) {
+        await AsyncStorage.setItem('accessToken', response.data.token);
+        console.log("Token stocké dans AsyncStorage");
+      }
+      
       // Si response.data.user existe, nous le stockons dans le state
       if (response.data.user) {
         dispatch(setUser(response.data.user)); 
-        // Assurez-vous également de sauvegarder l'utilisateur dans AsyncStorage ici si nécessaire
-        // await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
       }
       return response.data; // Devrait contenir { token, role, user (optionnel) }
     } catch (error) {
+      console.error("Erreur de login:", error.response?.data || error.message);
       return rejectWithValue(
         error.response?.data?.error || "Login failed. Please try again."
       );
@@ -39,15 +46,21 @@ const authSlice = createSlice({
     setUser(state, action) {
       state.user = action.payload;
       // Vous pouvez aussi mettre à jour isAuthenticated si l'utilisateur est défini
-      // state.isAuthenticated = !!action.payload;
+      state.isAuthenticated = !!action.payload;
     },
-    logout(state) {
-      state.user = null; // Réinitialise également l'utilisateur lors de la déconnexion
-      state.token = null;
-      state.role = null;
-      state.isAuthenticated = false;
-      // Pensez à supprimer l'utilisateur d'AsyncStorage ici aussi
-      // await AsyncStorage.removeItem("user");
+    logout: {
+      reducer(state) {
+        state.user = null;
+        state.token = null;
+        state.role = null;
+        state.isAuthenticated = false;
+      },
+      prepare() {
+        // Suppression du token et de l'utilisateur d'AsyncStorage
+        AsyncStorage.removeItem('accessToken');
+        AsyncStorage.removeItem('user');
+        return { payload: null };
+      }
     },
   },
   extraReducers: (builder) => {

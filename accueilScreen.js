@@ -101,13 +101,13 @@ function SidebarNav() {
 
   const clientNavItems = [
     { name: "Profil", route: "ProfilClient", icon: "person-outline" },
-    { name: "Invoices", route: "Invoices", icon: "cash-outline" },
     { name: "Project Management", route: "ProjectManagement", icon: "construct-outline" },
+    { name: "Invoices", route: "Invoices", icon: "cash-outline" },
     { name: "Claim", route: "Claim", icon: "library-outline" },
     { name: "Project List", route: "projectlist", icon: "list-outline" },
     { name: "Inbox", route: "Inbox", icon: "chatbubbles-outline" },
+    { name: "Freelancers", route: "Freelancers", icon: "people-outline" },
     { name: "Logout", route: "Logout", icon: "log-out-outline", onPress: handleLogout },
-    { name: "Freelancers", route: "Freelancers", icon: "people-outline" }
   ];
 
   const navItems = userRole === "freelancer" ? freelancerNavItems : clientNavItems;
@@ -292,11 +292,11 @@ function SidebarNav() {
     </TouchableOpacity>
 
     <TouchableOpacity 
-      style={styles.centralButton} 
-      onPress={() => setShowForm(true)}
-    >
-      <Ionicons name="add" size={24} color="#FFF" />
-    </TouchableOpacity>
+  style={styles.centralButton} 
+  onPress={() => navigation.navigate("AddProject")} // Modifié ici
+>
+  <Ionicons name="add" size={24} color="#FFF" />
+</TouchableOpacity>
 
     <TouchableOpacity 
       style={styles.bottomNavItem}
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: 150,
-    height: "99%",
+    height: "94.5%",
     backgroundColor: "#FFFFFF",
     paddingVertical: 20,
     zIndex: 20,

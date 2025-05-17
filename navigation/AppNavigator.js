@@ -16,6 +16,7 @@ import ProfilClient from "../ProfilClient";
 import ProjectManagement from "../ProjectManagement";
 import projectlist from "../projectlist";
 import Freelancers from "../Freelancers";
+import AddProject from "../AddProject";
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -54,7 +55,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ProjectManagement"component={ProjectManagement}/>
           <Stack.Screen name="projectlist"component={projectlist}/>
           <Stack.Screen name="Freelancers" component={Freelancers} />
-
+          <Stack.Screen name="AddProject" component={AddProject} />
         </>
       ) : (
         <>
