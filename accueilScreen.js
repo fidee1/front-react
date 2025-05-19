@@ -155,7 +155,7 @@ function SidebarNav() {
       <View style={styles.mainContainer}>
         <View style={styles.globalHeader}>
       <Image
-        source={require('./assets/images/logoo.jpg')}
+        source={require('./assets/images/logoo1.png')}
         style={styles.logo}
         resizeMode="contain"
       />
@@ -178,7 +178,7 @@ function SidebarNav() {
           <View style={styles.sidebar}>
             <View style={styles.sidebarHeader}>
               <Image
-              source={require('./assets/images/logoo.jpg')}
+              source={require('./assets/images/logoo1.png')}
                style={styles.logo}
               resizeMode="contain"
               />
@@ -248,7 +248,7 @@ function SidebarNav() {
 
         {/* Barre latérale en bas pour le client */}
         {userRole === "client" && (
-  <View style={[styles.bottomSidebar, {bottom: Constants.statusBarHeight + 10}]}>
+  <View style={[styles.bottomSidebar]}>
     <TouchableOpacity 
       style={styles.bottomNavItem}
       onPress={() => navigation.navigate("Inbox")}
@@ -445,7 +445,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: 150,
-    height: "94.5%",
+    height: "98.5%",
     backgroundColor: "#FFFFFF",
     paddingVertical: 20,
     zIndex: 20,

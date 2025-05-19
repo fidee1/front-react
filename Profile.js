@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image, Alert, SafeAreaView, StatusBar } from 'react-native';
 import { Button, Badge } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser, clearUser } from './redux/actions/registerActions'; // clearUser import kept for now
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
-const Profile = ({ navigation }) => {
+const Profile = () => {
+  const navigation = useNavigation();
   const authState = useSelector((state) => state.auth);
   const user = authState?.user || {};
   const token = authState?.token;
@@ -103,152 +105,169 @@ const Profile = ({ navigation }) => {
   const skillsList = skillsInput.split(',').filter(skill => skill.trim() !== '');
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <MaterialIcons name="arrow-back" size={24} color="#0F2573" />
-        </TouchableOpacity>
-        <Text style={styles.title}>👤 Profile</Text>
-        <View style={{ width: 24 }} /> {/* Placeholder for balance */} 
-      </View>
-
-      <View style={styles.profileCard}>
-        <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
-          <Text>✏ Edit Profile</Text>
-        </TouchableOpacity>
-
-        <View style={styles.profileHeader}>
-          <TouchableOpacity onPress={pickImage}>
-            {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.avatar} />
-            ) : (
-              user.profileImageUri ? (
-                <Image source={{ uri: user.profileImageUri }} style={styles.avatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <MaterialIcons name="person" size={40} color="#fff" />
-                </View>
-              )
-            )}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-          <Text style={styles.name}>{user.name} {user.lastName}</Text>
-          <Text style={styles.profession}>{editedProfile.titre}</Text>
-          <View style={styles.rating}>
-            {renderStars(editedProfile.note)}
-          </View>
-          <Badge style={styles.rateBadge}>💰 {editedProfile.note} TND/h</Badge>
+          <Text style={styles.headerText}>Profile</Text>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🧠 Skills</Text>
-          <View style={styles.skillsContainer}>
-            {skillsList.map((skill, index) => (
-              <Badge key={index} style={styles.skillBadge}>{skill.trim()}</Badge>
-            ))}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>💼 Experience</Text>
-          <Text style={styles.sectionContent}>{editedProfile.experience || 'No experience added'}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🖼 Portfolio</Text>
-          <Text style={styles.sectionContent}>
-            {editedProfile.portfolio || 'No portfolio added'}
-          </Text>
-        </View>
-      </View>
-
-      <Modal
-        animationType="slide"
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <MaterialIcons name="close" size={24} color="#000" />
+        <ScrollView style={styles.contentContainer}>
+          <View style={styles.profileCard}>
+            <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
+              <Text>✏ Edit Profile</Text>
             </TouchableOpacity>
+
+            <View style={styles.profileHeader}>
+              <TouchableOpacity onPress={pickImage}>
+                {profileImage ? (
+                  <Image source={{ uri: profileImage }} style={styles.avatar} />
+                ) : (
+                  user.profileImageUri ? (
+                    <Image source={{ uri: user.profileImageUri }} style={styles.avatar} />
+                  ) : (
+                    <View style={styles.avatarPlaceholder}>
+                      <MaterialIcons name="person" size={40} color="#fff" />
+                    </View>
+                  )
+                )}
+              </TouchableOpacity>
+              <Text style={styles.name}>{user.name} {user.lastName}</Text>
+              <Text style={styles.profession}>{editedProfile.titre}</Text>
+              <View style={styles.rating}>
+                {renderStars(editedProfile.note)}
+              </View>
+              <Badge style={styles.rateBadge}>💰 {editedProfile.note} TND/h</Badge>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🧠 Skills</Text>
+              <View style={styles.skillsContainer}>
+                {skillsList.map((skill, index) => (
+                  <Badge key={index} style={styles.skillBadge}>{skill.trim()}</Badge>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>💼 Experience</Text>
+              <Text style={styles.sectionContent}>{editedProfile.experience || 'No experience added'}</Text>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🖼 Portfolio</Text>
+              <Text style={styles.sectionContent}>
+                {editedProfile.portfolio || 'No portfolio added'}
+              </Text>
+            </View>
           </View>
+        </ScrollView>
 
-          <ScrollView style={styles.modalContent}>
-            <Text style={styles.label}>Profession</Text>
-            <TextInput
-              style={styles.input}
-              value={editedProfile.titre}
-              onChangeText={(text) => setEditedProfile({...editedProfile, titre: text})}
-              placeholder="Your profession"
-            />
+        <Modal
+          animationType="slide"
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <MaterialIcons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
 
-            <Text style={styles.label}>Hourly Rate (TND)</Text>
-            <TextInput
-              style={styles.input}
-              value={editedProfile.note.toString()}
-              onChangeText={(text) => setEditedProfile({...editedProfile, note: Number(text) || 0})}
-              keyboardType="numeric"
-              placeholder="Your hourly rate"
-            />
+            <ScrollView style={styles.modalContent}>
+              <Text style={styles.label}>Profession</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.titre}
+                onChangeText={(text) => setEditedProfile({...editedProfile, titre: text})}
+                placeholder="Your profession"
+              />
 
-            <Text style={styles.label}>Skills (comma separated)</Text>
-            <TextInput
-              style={[styles.input, { height: 100 }]}
-              value={skillsInput}
-              onChangeText={setSkillsInput}
-              multiline
-              placeholder="React Native, JavaScript, etc."
-            />
+              <Text style={styles.label}>Hourly Rate (TND)</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.note.toString()}
+                onChangeText={(text) => setEditedProfile({...editedProfile, note: Number(text) || 0})}
+                keyboardType="numeric"
+                placeholder="Your hourly rate"
+              />
 
-            <Text style={styles.label}>Experience</Text>
-            <TextInput
-              style={[styles.input, { height: 100 }]}
-              value={editedProfile.experience}
-              onChangeText={(text) => setEditedProfile({...editedProfile, experience: text})}
-              multiline
-              placeholder="Describe your experience"
-            />
+              <Text style={styles.label}>Skills (comma separated)</Text>
+              <TextInput
+                style={[styles.input, { height: 100 }]}
+                value={skillsInput}
+                onChangeText={setSkillsInput}
+                multiline
+                placeholder="React Native, JavaScript, etc."
+              />
 
-            <Text style={styles.label}>Portfolio URL</Text>
-            <TextInput
-              style={styles.input}
-              value={editedProfile.portfolio}
-              onChangeText={(text) => setEditedProfile({...editedProfile, portfolio: text})}
-              placeholder="Your portfolio link"
-            />
-          </ScrollView>
+              <Text style={styles.label}>Experience</Text>
+              <TextInput
+                style={[styles.input, { height: 100 }]}
+                value={editedProfile.experience}
+                onChangeText={(text) => setEditedProfile({...editedProfile, experience: text})}
+                multiline
+                placeholder="Describe your experience"
+              />
 
-          <View style={styles.modalFooter}>
-            <Button mode="outlined" onPress={() => setModalVisible(false)}>
-              Cancel
-            </Button>
-            <Button mode="contained" onPress={handleSaveProfile} style={styles.saveButton}>
-              Save Changes
-            </Button>
+              <Text style={styles.label}>Portfolio URL</Text>
+              <TextInput
+                style={styles.input}
+                value={editedProfile.portfolio}
+                onChangeText={(text) => setEditedProfile({...editedProfile, portfolio: text})}
+                placeholder="Your portfolio link"
+              />
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <Button mode="outlined" onPress={() => setModalVisible(false)}>
+                Cancel
+              </Button>
+              <Button mode="contained" onPress={handleSaveProfile} style={styles.saveButton}>
+                Save Changes
+              </Button>
+            </View>
           </View>
-        </View>
-      </Modal>
-    </ScrollView>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0F2573',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
+    backgroundColor: '#F0F8FF',
   },
   header: {
+    backgroundColor: '#0F2573',
+    padding: 15,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
   },
-  title: {
+  backButton: {
+    marginRight: 10,
+  },
+  headerText: {
+    color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#0F2573',
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 16,
   },
   profileCard: {
     backgroundColor: '#fff',

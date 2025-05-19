@@ -9,6 +9,7 @@ import {
   Animated,
   Easing,
   ImageBackground,
+  Image,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Toast from "react-native-toast-message";
@@ -68,19 +69,25 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <ImageBackground
-      source={require("./assets/images/backg.jpg")}
+      source={require("./assets/images/fond6.jpg")}
       style={styles.background}
     >
       <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.logoContainer}>
-          <Icon name="laptop-code" size={50} color="#000000" solid />
-          <Text style={styles.title}>Freelancy</Text>
-          <Text style={styles.subtitle}>Sometimes, you gotta move forward</Text>
-        </View>
-
-        {/* Champs de saisie */}
+        {/* La partie logo et slogan a été déplacée dans la card */}
+        
+        {/* Carte contenant maintenant le logo et le formulaire */}
         <View style={styles.card}>
+          {/* Logo et slogan */}
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require("./assets/images/logoo1.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.subtitle}>Sometimes, you gotta move forward</Text>
+          </View>
+
+          {/* Champs de saisie */}
           <View style={styles.inputWrapper}>
             <Icon name="envelope" size={18} color="#888" style={styles.inputIcon} />
             <TextInput
@@ -156,26 +163,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
   },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    color: "#000000",
-    fontWeight: "bold",
-    marginTop: 10,
-  },
-  subtitle: {
-    fontSize: 20,
-    color: "#000000",
-    marginBottom: 20,
-    textAlign: "center",
-  },
   card: {
     width: "100%",
-    maxWidth: 380,
-    backgroundColor: "white",
+    maxWidth: 350,
+   backgroundColor: "rgba(255, 255, 255, 0.95)",
     padding: 25,
     borderRadius: 20,
     shadowColor: "#000",
@@ -183,6 +174,23 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 10,
     elevation: 6,
+    marginTop: 50,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  logoImage: {
+    width: 120,
+    height: 120,
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 20,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   inputWrapper: {
     flexDirection: "row",

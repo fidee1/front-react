@@ -10,13 +10,14 @@ import {
   Animated,
   Easing,
   ImageBackground,
+  Image,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Toast from "react-native-toast-message";
 import { register } from "./redux/actions/registerActions";
 import { Picker } from "@react-native-picker/picker";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import axios from 'axios';
+
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -43,26 +44,15 @@ export default function RegisterScreen({ navigation }) {
       showToast("error", "Passwords do not match");
       return;
     }
-    const userData = {
-      name,
-      lastName,
-      email,
-      password,
-      role,
-    };
+
+    const userData = { name, lastName, email, password, role };
     
-    // Vérification des données avant l'envoi
-    console.log("Données envoyées : ", userData);
     dispatch(
       register(
         userData, 
         () => {
           showToast("success", "Registration successful! You can now log in.");
-          // Confirme que la fonction onSuccess est bien exécutée
-          setTimeout(() => {
-            console.log("Navigating to LoginScreen...");
-            navigation.navigate("LoginScreen");
-          }, 1500);
+          setTimeout(() => navigation.navigate("LoginScreen"), 1500);
         },
         (errorMessage) => showToast("error", errorMessage)
       )
@@ -89,16 +79,23 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <ImageBackground
-      source={require("./assets/images/backg.jpg")}
+      source={require("./assets/images/fond6.jpg")}
       style={styles.background}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.logoContainer}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Welcome to our application</Text>
-        </View>
-
         <View style={styles.card}>
+          {/* Logo et titre intégrés dans la carte */}
+          <View style={styles.logoContainer}>
+            <Image 
+              source={require("./assets/images/logoo1.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Welcome to our application</Text>
+          </View>
+
+          {/* Formulaire */}
           <View style={styles.inputWrapper}>
             <Ionicons name="person" size={20} color="black" style={styles.icon} />
             <TextInput
@@ -162,7 +159,7 @@ export default function RegisterScreen({ navigation }) {
             <Ionicons name="person-circle" size={20} color="#333" style={styles.icon} />
             <Picker
               selectedValue={role}
-              onValueChange={(itemValue) => setRole(itemValue)}
+              onValueChange={setRole}
               style={styles.picker}
             >
               <Picker.Item label="Select your role" value="" />
@@ -211,27 +208,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    paddingVertical: 130,
-    paddingTop: 100,
-  },
-  logoContainer: {
-    alignItems: "center",
-    marginBottom: 5, // Espacement augmenté
-  },
-  title: {
-    fontSize: 28,
-    color: "#000",
-    fontWeight: "bold",
-  },
-  subtitle: {
-    fontSize: 20,
-    color: "#000",
-    marginBottom: 10,
   },
   card: {
-    width: "95%",
+    width: "100%",
     maxWidth: 360,
-    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
     padding: 25,
     borderRadius: 20,
     shadowColor: "#000",
@@ -239,8 +220,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 8,
-    marginTop: 5, // Distance augmentée
-    paddingVertical: 20,
+    marginVertical: 20,
+    marginTop: 5,
+  },
+  logoContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  logoImage: {
+    width: 120,
+    height: 120,
+    marginBottom: -2,
+    borderRadius: 60,
+  },
+  title: {
+    fontSize: 24,
+    color: "#000",
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 5,
+    textAlign: "center",
   },
   inputWrapper: {
     flexDirection: "row",

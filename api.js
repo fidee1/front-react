@@ -7,7 +7,7 @@ const api = axios.create({
   // Pour les tests sur émulateur, utilisez localhost
   // Pour les tests sur appareil physique, utilisez l'adresse IP de votre machine
   // Exemple: "http://192.168.1.x:8080/api/"
-  baseURL: Constants.expoConfig.extra?.API_URL || "http://192.168.1.113:8080/api/",
+  baseURL: Constants.expoConfig.extra?.API_URL || "http://192.168.1.148:8080/api/",
   timeout: 30000,
 });
 

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView, StatusBar } from 'react-native';
 import { DataTable, Card } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const ListOfOffers = () => {
+  const navigation = useNavigation();
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -21,65 +24,71 @@ const ListOfOffers = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor="#0F2573" />
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Card style={styles.card}>
-          <Card.Title 
-            title="Available Projects for Freelancers" 
-            titleStyle={styles.cardTitle}
-            style={styles.cardHeader}
-          />
-          
-          <Card.Content style={styles.cardContent}>
-            {showAlert && (
-              <View style={styles.alert}>
-                <Text style={styles.alertText}>{alertMessage}</Text>
-              </View>
-            )}
-            
-            <DataTable style={styles.dataTable}>
-              <DataTable.Header style={styles.tableHeader}>
-                <DataTable.Title style={styles.headerCell}>#</DataTable.Title>
-                <DataTable.Title style={styles.headerCell}>Project</DataTable.Title>
-                <DataTable.Title numeric style={styles.headerCell}>Budget</DataTable.Title>
-                <DataTable.Title style={styles.headerCell}>Action</DataTable.Title>
-              </DataTable.Header>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>List of Offers</Text>
+        </View>
+        
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <Card style={styles.card}>
+            <Card.Content style={styles.cardContent}>
+              {showAlert && (
+                <View style={styles.alert}>
+                  <Text style={styles.alertText}>{alertMessage}</Text>
+                </View>
+              )}
+              
+              <DataTable style={styles.dataTable}>
+                <DataTable.Header style={styles.tableHeader}>
+                  <DataTable.Title style={styles.headerCell}>#</DataTable.Title>
+                  <DataTable.Title style={styles.headerCell}>Project</DataTable.Title>
+                  <DataTable.Title numeric style={styles.headerCell}>Budget</DataTable.Title>
+                  <DataTable.Title style={styles.headerCell}>Action</DataTable.Title>
+                </DataTable.Header>
 
-              {offers.map((offer, index) => (
-                <DataTable.Row key={index} style={styles.tableRow}>
-                  <DataTable.Cell style={styles.cell}>{index + 1}</DataTable.Cell>
-                  <DataTable.Cell style={styles.cell}>
-                    <View style={styles.projectInfo}>
-                      <Text style={styles.offerTitle} numberOfLines={2}>{offer.title}</Text>
-                      <View style={styles.categoryBadge}>
-                        <Text style={styles.offerCategory}>{offer.category}</Text>
+                {offers.map((offer, index) => (
+                  <DataTable.Row key={index} style={styles.tableRow}>
+                    <DataTable.Cell style={styles.cell}>{index + 1}</DataTable.Cell>
+                    <DataTable.Cell style={styles.cell}>
+                      <View style={styles.projectInfo}>
+                        <Text style={styles.offerTitle} numberOfLines={2}>{offer.title}</Text>
+                        <View style={styles.categoryBadge}>
+                          <Text style={styles.offerCategory}>{offer.category}</Text>
+                        </View>
+                        <Text style={styles.offerDeadline}>⏱ {offer.deadline}</Text>
                       </View>
-                      <Text style={styles.offerDeadline}>⏱ {offer.deadline}</Text>
-                    </View>
-                  </DataTable.Cell>
-                  <DataTable.Cell numeric style={styles.cell}>{offer.budget} TND</DataTable.Cell>
-                  <DataTable.Cell style={styles.cell}>
-                    <View style={styles.buttonGroup}>
-                      <TouchableOpacity 
-                        style={[styles.button, styles.acceptButton]}
-                        onPress={() => handleAction(offer.title, 'accepted')}
-                      >
-                        <Text style={styles.buttonText}>✓ Accept</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.button, styles.rejectButton]}
-                        onPress={() => handleAction(offer.title, 'rejected')}
-                      >
-                        <Text style={styles.buttonText}>✗ Reject</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </DataTable.Cell>
-                </DataTable.Row>
-              ))}
-            </DataTable>
-          </Card.Content>
-        </Card>
-      </ScrollView>
+                    </DataTable.Cell>
+                    <DataTable.Cell numeric style={styles.cell}>{offer.budget} TND</DataTable.Cell>
+                    <DataTable.Cell style={styles.cell}>
+                      <View style={styles.buttonGroup}>
+                        <TouchableOpacity 
+                          style={[styles.button, styles.acceptButton]}
+                          onPress={() => handleAction(offer.title, 'accepted')}
+                        >
+                          <Text style={styles.buttonText}>✓ Accept</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.button, styles.rejectButton]}
+                          onPress={() => handleAction(offer.title, 'rejected')}
+                        >
+                          <Text style={styles.buttonText}>✗ Reject</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </DataTable.Cell>
+                  </DataTable.Row>
+                ))}
+              </DataTable>
+            </Card.Content>
+          </Card>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -87,26 +96,34 @@ const ListOfOffers = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#0F2573',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#F0F8FF',
+  },
+  header: {
+    backgroundColor: '#0F2573',
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   scrollContainer: {
     padding: 10,
-    paddingTop: 60,
   },
   card: {
     borderRadius: 16,
     overflow: 'hidden',
     backgroundColor: '#FFF',
     marginBottom: 20,
-  },
-  cardHeader: {
-    backgroundColor: '#0F2573',
-    paddingVertical: 16,
-  },
-  cardTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
   },
   cardContent: {
     paddingHorizontal: 0,

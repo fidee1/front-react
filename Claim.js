@@ -11,6 +11,8 @@ import {
   StatusBar
 } from 'react-native';
 import { Card, Button } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 const palette = {
   LIGHT_BLUE: "#ADE1FB",
@@ -30,6 +32,7 @@ const colors = {
 };
 
 export default function Claim() {
+  const navigation = useNavigation();
   const [form, setForm] = useState({
     subject: '',
     description: '',
@@ -103,116 +106,130 @@ export default function Claim() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={palette.DARK_BLUE} />
-      
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Header */}
-        <Card style={styles.headerCard}>
-          <Card.Title
-            title="📝 Submit a Claim"
-            titleStyle={styles.headerTitle}
-            style={styles.headerContent}
-          />
-        </Card>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Claims</Text>
+        </View>
+        
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {/* Claim Form */}
+          <Card style={styles.formCard}>
+            <Card.Content>
+              <Text style={styles.sectionTitle}>Submit a Claim</Text>
+              
+              <Text style={styles.label}>Subject</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter the subject of your claim"
+                placeholderTextColor={palette.LIGHT_BLUE}
+                value={form.subject}
+                onChangeText={(text) => setForm({ ...form, subject: text })}
+              />
 
-        {/* Claim Form */}
-        <Card style={styles.formCard}>
-          <Card.Content>
-            <Text style={styles.label}>Subject</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter the subject of your claim"
-              placeholderTextColor={palette.LIGHT_BLUE}
-              value={form.subject}
-              onChangeText={(text) => setForm({ ...form, subject: text })}
-            />
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                multiline
+                numberOfLines={4}
+                placeholder="Provide more details about your claim"
+                placeholderTextColor={palette.LIGHT_BLUE}
+                value={form.description}
+                onChangeText={(text) => setForm({ ...form, description: text })}
+              />
 
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              multiline
-              numberOfLines={4}
-              placeholder="Provide more details about your claim"
-              placeholderTextColor={palette.LIGHT_BLUE}
-              value={form.description}
-              onChangeText={(text) => setForm({ ...form, description: text })}
-            />
+              <Button
+                mode="contained"
+                onPress={submitClaim}
+                loading={loading}
+                disabled={loading}
+                style={styles.submitButton}
+                labelStyle={styles.buttonLabel}
+              >
+                Submit Claim
+              </Button>
+            </Card.Content>
+          </Card>
 
-            <Button
-              mode="contained"
-              onPress={submitClaim}
-              loading={loading}
-              disabled={loading}
-              style={styles.submitButton}
-              labelStyle={styles.buttonLabel}
-            >
-              Submit Claim
-            </Button>
-          </Card.Content>
-        </Card>
-
-        {/* Claims List */}
-        {claims.length > 0 && (
-          <View style={styles.claimsContainer}>
-            <Text style={styles.sectionTitle}>📂 Your Claim History</Text>
-            
-            {claims.map((claim) => (
-              <Card key={claim.id} style={styles.claimCard}>
-                <Card.Content>
-                  <View style={styles.claimHeader}>
-                    <Text style={styles.claimSubject}>{claim.subject}</Text>
-                    <Button
-                      mode="text"
-                      onPress={() => deleteClaim(claim.id)}
-                      textColor={palette.LIGHT_BLUE}
-                      style={styles.deleteButton}
-                    >
-                      Delete
-                    </Button>
-                  </View>
-                  
-                  <Text style={styles.claimDescription}>{claim.description}</Text>
-                  <Text style={styles.claimUser}>
-                    👤 {claim.user?.name || 'Unknown User'}
-                  </Text>
-                </Card.Content>
-              </Card>
-            ))}
-          </View>
-        )}
-      </ScrollView>
+          {/* Claims List */}
+          {claims.length > 0 && (
+            <View style={styles.claimsContainer}>
+              <Text style={styles.sectionTitle}>Your Claim History</Text>
+              
+              {claims.map((claim) => (
+                <Card key={claim.id} style={styles.claimCard}>
+                  <Card.Content>
+                    <View style={styles.claimHeader}>
+                      <Text style={styles.claimSubject}>{claim.subject}</Text>
+                      <Button
+                        mode="text"
+                        onPress={() => deleteClaim(claim.id)}
+                        textColor={palette.LIGHT_BLUE}
+                        style={styles.deleteButton}
+                      >
+                        Delete
+                      </Button>
+                    </View>
+                    
+                    <Text style={styles.claimDescription}>{claim.description}</Text>
+                    <Text style={styles.claimUser}>
+                      👤 {claim.user?.name || 'Unknown User'}
+                    </Text>
+                  </Card.Content>
+                </Card>
+              ))}
+            </View>
+          )}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0F2573',
+  },
   container: {
     flex: 1,
-    backgroundColor: palette.LIGHT_BLUE,
+    backgroundColor: '#F0F8FF',
+  },
+  header: {
+    backgroundColor: '#0F2573',
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   scrollContainer: {
     padding: 16,
     paddingBottom: 32,
   },
-  headerCard: {
-    backgroundColor: palette.DARK_BLUE,
-    marginBottom: 16,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  headerContent: {
-    backgroundColor: palette.DARK_BLUE,
-  },
-  headerTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
   formCard: {
     marginBottom: 24,
     borderRadius: 12,
     backgroundColor: 'white',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: palette.DARK_BLUE,
+    marginBottom: 16,
   },
   label: {
     fontSize: 16,
@@ -247,12 +264,6 @@ const styles = StyleSheet.create({
   },
   claimsContainer: {
     marginTop: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: palette.DARK_BLUE,
-    marginBottom: 16,
   },
   claimCard: {
     marginBottom: 12,

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image, Alert, SafeAreaView, StatusBar } from 'react-native';
 import { Button } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
-const ProfilClient = ({ navigation, route }) => {
-  const isExternalView = route.params?.isExternalView || false;
+const ProfilClient = ({ route }) => {
+  const navigation = useNavigation();
+  const isExternalView = route?.params?.isExternalView || false;
   const [profile, setProfile] = useState({
     id: 'client123',
     companyName: '',
@@ -123,220 +125,244 @@ const ProfilClient = ({ navigation, route }) => {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading profile...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" />
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.headerText}>Client Profile</Text>
+          </View>
+          <View style={styles.loadingContainer}>
+            <Text>Loading profile...</Text>
+          </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="#0F2573" />
-        </TouchableOpacity>
-        <Text style={styles.pageTitle}>👤 Client Profile</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <View style={styles.profileCard}>
-        <View style={styles.avatarContainer}>
-          <TouchableOpacity onPress={pickImage}>
-            {profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.profileImage} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <MaterialIcons name="add-a-photo" size={40} color="#5E548E" />
-              </View>
-            )}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
-          
-          <View style={styles.ratingContainer}>
-            {renderStars(profile.rating)}
-          </View>
+          <Text style={styles.headerText}>Client Profile</Text>
         </View>
-
-        {renderField('Company Name', profile.companyName)}
-        {renderField('Email', profile.email)}
-        {renderField('Phone', profile.phone)}
-        {renderField('Location', profile.location)}
-        {renderField('Company Description', profile.companyDescription)}
-        {renderField('Client Needs', profile.clientNeeds, true)}
-
-        {!isExternalView && (
-          <Button 
-            mode="contained" 
-            onPress={() => {
-              setEditedProfile(profile);
-              setModalVisible(true);
-            }}
-            style={styles.editButton}
-            labelStyle={styles.buttonLabel}
-            loading={isLoading}
-          >
-            Edit Profile
-          </Button>
-        )}
-
-        {isExternalView && (
-          <Button 
-            mode="contained" 
-            onPress={handleStartChat}
-            style={styles.chatButton}
-            labelStyle={styles.buttonLabel}
-            icon="message"
-          >
-            Send Message
-          </Button>
-        )}
-      </View>
-
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Edit Profile</Text>
-            <TouchableOpacity onPress={() => setModalVisible(false)}>
-              <MaterialIcons name="close" size={24} color="#999" />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalContent}>
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Company Name</Text>
-              <TextInput
-                style={styles.input}
-                value={editedProfile.companyName}
-                onChangeText={(text) => setEditedProfile({...editedProfile, companyName: text})}
-                placeholder="Enter company name"
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={editedProfile.email}
-                onChangeText={(text) => setEditedProfile({...editedProfile, email: text})}
-                placeholder="Enter email"
-                keyboardType="email-address"
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Phone</Text>
-              <TextInput
-                style={styles.input}
-                value={editedProfile.phone}
-                onChangeText={(text) => setEditedProfile({...editedProfile, phone: text})}
-                placeholder="Enter phone number"
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Location</Text>
-              <TextInput
-                style={styles.input}
-                value={editedProfile.location}
-                onChangeText={(text) => setEditedProfile({...editedProfile, location: text})}
-                placeholder="Enter location"
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Company Description</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={editedProfile.companyDescription}
-                onChangeText={(text) => setEditedProfile({...editedProfile, companyDescription: text})}
-                placeholder="Describe your company"
-                multiline
-                numberOfLines={4}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Client Needs</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
-                value={editedProfile.clientNeeds}
-                onChangeText={(text) => setEditedProfile({...editedProfile, clientNeeds: text})}
-                placeholder="Describe your needs"
-                multiline
-                numberOfLines={4}
-              />
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Rating</Text>
+        
+        <ScrollView style={styles.contentContainer} contentContainerStyle={styles.scrollContentContainer}>
+          <View style={styles.profileCard}>
+            <View style={styles.avatarContainer}>
+              <TouchableOpacity onPress={pickImage}>
+                {profileImage ? (
+                  <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                ) : (
+                  <View style={styles.avatarPlaceholder}>
+                    <MaterialIcons name="add-a-photo" size={40} color="#5E548E" />
+                  </View>
+                )}
+              </TouchableOpacity>
+              
               <View style={styles.ratingContainer}>
-                {renderStars(editedProfile.rating, true)}
+                {renderStars(profile.rating)}
               </View>
             </View>
-          </ScrollView>
 
-          <View style={styles.modalFooter}>
-            <Button 
-              mode="outlined" 
-              onPress={() => setModalVisible(false)}
-              style={styles.cancelButton}
-              labelStyle={styles.cancelButtonLabel}
-              disabled={isLoading}
-            >
-              Cancel
-            </Button>
-            <Button 
-              mode="contained" 
-              onPress={handleSaveProfile}
-              style={styles.saveButton}
-              labelStyle={styles.buttonLabel}
-              loading={isLoading}
-              disabled={isLoading}
-            >
-              Save Changes
-            </Button>
+            {renderField('Company Name', profile.companyName)}
+            {renderField('Email', profile.email)}
+            {renderField('Phone', profile.phone)}
+            {renderField('Location', profile.location)}
+            {renderField('Company Description', profile.companyDescription)}
+            {renderField('Client Needs', profile.clientNeeds, true)}
+
+            {!isExternalView && (
+              <Button 
+                mode="contained" 
+                onPress={() => {
+                  setEditedProfile(profile);
+                  setModalVisible(true);
+                }}
+                style={styles.editButton}
+                labelStyle={styles.buttonLabel}
+                loading={isLoading}
+              >
+                Edit Profile
+              </Button>
+            )}
+
+            {isExternalView && (
+              <Button 
+                mode="contained" 
+                onPress={handleStartChat}
+                style={styles.chatButton}
+                labelStyle={styles.buttonLabel}
+                icon="message"
+              >
+                Send Message
+              </Button>
+            )}
           </View>
-        </View>
-      </Modal>
-    </ScrollView>
+        </ScrollView>
+
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <MaterialIcons name="close" size={24} color="#999" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalContent}>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Company Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.companyName}
+                  onChangeText={(text) => setEditedProfile({...editedProfile, companyName: text})}
+                  placeholder="Enter company name"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.email}
+                  onChangeText={(text) => setEditedProfile({...editedProfile, email: text})}
+                  placeholder="Enter email"
+                  keyboardType="email-address"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Phone</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.phone}
+                  onChangeText={(text) => setEditedProfile({...editedProfile, phone: text})}
+                  placeholder="Enter phone number"
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Location</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editedProfile.location}
+                  onChangeText={(text) => setEditedProfile({...editedProfile, location: text})}
+                  placeholder="Enter location"
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Company Description</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={editedProfile.companyDescription}
+                  onChangeText={(text) => setEditedProfile({...editedProfile, companyDescription: text})}
+                  placeholder="Describe your company"
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Client Needs</Text>
+                <TextInput
+                  style={[styles.input, styles.textArea]}
+                  value={editedProfile.clientNeeds}
+                  onChangeText={(text) => setEditedProfile({...editedProfile, clientNeeds: text})}
+                  placeholder="Describe your needs"
+                  multiline
+                  numberOfLines={4}
+                />
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Rating</Text>
+                <View style={styles.ratingContainer}>
+                  {renderStars(editedProfile.rating, true)}
+                </View>
+              </View>
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <Button 
+                mode="outlined" 
+                onPress={() => setModalVisible(false)}
+                style={styles.cancelButton}
+                labelStyle={styles.cancelButtonLabel}
+                disabled={isLoading}
+              >
+                Cancel
+              </Button>
+              <Button 
+                mode="contained" 
+                onPress={handleSaveProfile}
+                style={styles.saveButton}
+                labelStyle={styles.buttonLabel}
+                loading={isLoading}
+                disabled={isLoading}
+              >
+                Save Changes
+              </Button>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0F2573',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F0F8FF',
+  },
+  header: {
+    backgroundColor: '#0F2573',
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   contentContainer: {
+    flex: 1,
+  },
+  scrollContentContainer: {
     padding: 16,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerSpacer: {
-    width: 24,
-  },
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#0F2573',
-    flex: 1,
-    textAlign: 'center',
   },
   profileCard: {
     backgroundColor: 'white',

@@ -39,7 +39,7 @@ const ProjectManagement = ({ navigation }) => {
         date: '2025-04-01',
         budget: 1500,
         status: 'in_progress',
-        freelancer: 'John Doe',
+        freelancer: 'Haythem',
         rating: null,
       },
       {
@@ -48,7 +48,7 @@ const ProjectManagement = ({ navigation }) => {
         date: '2025-03-15',
         budget: 800,
         status: 'finished',
-        freelancer: 'Jane Smith',
+        freelancer: 'Houssem',
         rating: 4,
       },
       {
@@ -56,8 +56,8 @@ const ProjectManagement = ({ navigation }) => {
         name: 'Logo Design',
         date: '2025-04-10',
         budget: 200,
-        status: 'pending',
-        freelancer: '',
+        status: 'in_progress',
+        freelancer: 'Michaal',
         rating: null,
       },
     ];
@@ -125,6 +125,7 @@ const ProjectManagement = ({ navigation }) => {
       default:
         return styles.statusDefault;
     }
+    
   };
 
   // Fonction pour naviguer vers la page de création de projet
@@ -133,52 +134,51 @@ const ProjectManagement = ({ navigation }) => {
   };
 
   const renderProjectItem = ({ item }) => (
-    <View style={styles.projectCard}>
-      <View style={styles.projectHeader}>
-        <Text style={styles.projectName}>{item.name}</Text>
-        <Text style={styles.projectDate}>{formatDate(item.date)}</Text>
-      </View>
-      
-      <View style={styles.projectDetails}>
-        <Text style={styles.projectBudget}>${item.budget}</Text>
-        <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
-          <Text style={styles.statusText}>
-            {item.status === 'in_progress' ? 'In Progress' : 
-             item.status === 'finished' ? 'Finished' : 'Pending'}
-          </Text>
-        </View>
-      </View>
-      
-      {item.status !== 'pending' && (
-        <Text style={styles.freelancerText}>Freelancer: {item.freelancer}</Text>
-      )}
-      
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity style={[styles.actionButton, styles.viewButton]}>
-          <Text style={styles.buttonText}>View</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => deleteProject(item.id)}
-        >
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-        
-        {item.status === 'finished' && (
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.rateButton]}
-            onPress={() => openRatingModal(item)}
-          >
-            <Text style={styles.buttonText}>
-              {item.rating ? `${item.rating} ★` : 'Rate'}
-            </Text>
-          </TouchableOpacity>
-        )}
+  <View style={styles.projectCard}>
+    <View style={styles.projectHeader}>
+      <Text style={styles.projectName}>{item.name}</Text>
+      <Text style={styles.projectDate}>{formatDate(item.date)}</Text>
+    </View>
+    
+    <View style={styles.projectDetails}>
+      <Text style={styles.projectBudget}>{item.budget} DT</Text>
+      <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
+        <Text style={styles.statusText}>
+          {item.status === 'in_progress' ? 'In Progress' : 
+            item.status === 'finished' ? 'Finished' : 'Pending'}
+        </Text>
       </View>
     </View>
-  );
-
+    
+    {item.status !== 'pending' && (
+      <Text style={styles.freelancerText}>Freelancer: {item.freelancer}</Text>
+    )}
+    
+    <View style={styles.actionsContainer}>
+      <TouchableOpacity style={[styles.actionButton, styles.viewButton]}>
+        <Text style={styles.buttonText}>View</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.actionButton, styles.deleteButton]}
+        onPress={() => deleteProject(item.id)}
+      >
+        <Text style={styles.buttonText}>Delete</Text>
+      </TouchableOpacity>
+      
+      {item.status === 'finished' && (
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.rateButton]}
+          onPress={() => openRatingModal(item)}
+        >
+          <Text style={styles.buttonText}>
+            {item.rating ? `${item.rating} ★` : 'Rate'}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  </View>
+);
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
@@ -472,6 +472,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F2573',
   },
   buttonText: {
+
     color: 'white',
     fontSize: 13,
     fontWeight: '500',

@@ -4,13 +4,13 @@ import { StyleSheet, View, Image, ImageBackground } from 'react-native';
 const SplashScreen = () => {
   return (
     <ImageBackground
-      source={require('./assets/images/bb.jpg')} // Image de fond
+      source={require('./assets/images/fond6.jpg')} // Image de fond
       style={styles.background}
       resizeMode="cover" // Assure que l'image de fond couvre tout l'écran
     >
       <View style={styles.overlay}> {/* Conteneur pour le logo, centré sur le fond */}
         <Image
-          source={require('./assets/images/logoo.jpg')} // Logo
+          source={require('./assets/images/logoo1.png')} // Logo
           style={styles.logo}
           resizeMode="contain" // Assure que toute l'image du logo est visible
         />

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Alert, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Alert, ActivityIndicator, RefreshControl, SafeAreaView, StatusBar } from 'react-native';
 import { Picker } from '@react-native-picker/picker'; // Utilisation du picker de la communauté
 import { Card, Title, Paragraph, Button, Badge } from 'react-native-paper'; // Utilisation de react-native-paper pour les composants UI
-// import { useSelector } from 'react-redux'; // Supposons que le rôle et le token viennent de Redux
-// import axios from 'axios'; // Pour les appels API
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 // Simuler l'état Redux pour le développement
 const mockAuthStore = {
@@ -61,7 +61,8 @@ const updatePaymentStatusAPI = async (paymentId, newStatus, token) => {
   return { success: true }; 
 };
 
-const Invoices = ({ navigation }) => {
+const Invoices = () => {
+  const navigation = useNavigation();
   // const authStore = useSelector((state) => state.auth); // Récupérer depuis Redux
   const authStore = mockAuthStore; // Utilisation du mock pour le développement
   const role = authStore.role;
@@ -178,86 +179,128 @@ const Invoices = ({ navigation }) => {
 
   if (loading && payments.length === 0) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0F2573" />
-        <Text>Chargement des paiements...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" />
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.headerText}>Invoices</Text>
+          </View>
+          <View style={styles.centered}>
+            <ActivityIndicator size="large" color="#0F2573" />
+            <Text>Chargement des paiements...</Text>
+          </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.headerTitle}>Mes Paiements</Text>
-      {payments.length === 0 && !loading ? (
-        <View style={styles.centered}>
-            <Text style={styles.noPaymentsText}>Aucun paiement trouvé.</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Invoices</Text>
         </View>
-      ) : (
-        <FlatList
-          data={payments}
-          renderItem={renderPaymentItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContentContainer}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#0F2573"]}/>}
-        />
-      )}
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredViewModal}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Changer le statut du paiement</Text>
-            {selectedPayment && (
-                <Text style={styles.modalInfo}>Paiement ID: {selectedPayment.id}</Text>
-            )}
-            <View style={styles.pickerContainer}>
-                <Picker
-                selectedValue={selectedStatus}
-                style={styles.picker}
-                onValueChange={(itemValue) => setSelectedStatus(itemValue)}
-                dropdownIconColor="#0F2573"
-                >
-                <Picker.Item label="-- Choisir un statut --" value="" enabled={false} style={{color: 'grey'}} />
-                <Picker.Item label="Annulé" value="cancelled" />
-                <Picker.Item label="Terminé" value="finished" />
-                {/* Ajouter d'autres statuts si nécessaire, par exemple 'on hold' si on peut y revenir */} 
-                </Picker>
+        
+        <View style={styles.contentContainer}>
+          {payments.length === 0 && !loading ? (
+            <View style={styles.centered}>
+                <Text style={styles.noPaymentsText}>Aucun paiement trouvé.</Text>
             </View>
-            
-            <View style={styles.modalButtonsContainer}>
-              <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.modalButton} labelStyle={{color: "#0F2573"}}>
-                Annuler
-              </Button>
-              <Button mode="contained" onPress={handleSaveStatus} style={[styles.modalButton, styles.saveButtonModal]} labelStyle={{color: "white"}} loading={loading} disabled={loading}>
-                Sauvegarder
-              </Button>
+          ) : (
+            <FlatList
+              data={payments}
+              renderItem={renderPaymentItem}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={styles.listContentContainer}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#0F2573"]}/>}
+            />
+          )}
+        </View>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredViewModal}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalTitle}>Changer le statut du paiement</Text>
+              {selectedPayment && (
+                  <Text style={styles.modalInfo}>Paiement ID: {selectedPayment.id}</Text>
+              )}
+              <View style={styles.pickerContainer}>
+                  <Picker
+                  selectedValue={selectedStatus}
+                  style={styles.picker}
+                  onValueChange={(itemValue) => setSelectedStatus(itemValue)}
+                  dropdownIconColor="#0F2573"
+                  >
+                  <Picker.Item label="-- Choisir un statut --" value="" enabled={false} style={{color: 'grey'}} />
+                  <Picker.Item label="Annulé" value="cancelled" />
+                  <Picker.Item label="Terminé" value="finished" />
+                  {/* Ajouter d'autres statuts si nécessaire, par exemple 'on hold' si on peut y revenir */} 
+                  </Picker>
+              </View>
+              
+              <View style={styles.modalButtonsContainer}>
+                <Button mode="outlined" onPress={() => setModalVisible(false)} style={styles.modalButton} labelStyle={{color: "#0F2573"}}>
+                  Annuler
+                </Button>
+                <Button mode="contained" onPress={handleSaveStatus} style={[styles.modalButton, styles.saveButtonModal]} labelStyle={{color: "white"}} loading={loading} disabled={loading}>
+                  Sauvegarder
+                </Button>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0F2573',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F0F8FF',
+  },
+  header: {
+    backgroundColor: '#0F2573',
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  contentContainer: {
+    flex: 1,
     paddingHorizontal: 10,
     paddingTop: 20,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#0F2573',
-    marginBottom: 20,
-    textAlign: 'center',
   },
   centered: {
     flex: 1,
@@ -379,4 +422,3 @@ const styles = StyleSheet.create({
 });
 
 export default Invoices;
-

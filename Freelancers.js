@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, ActivityIndicator, Alert, SafeAreaView, StatusBar } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getFreelancers } from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
-const Freelancers = ({ navigation }) => {
+const Freelancers = () => {
+  const navigation = useNavigation();
   const [freelancers, setFreelancers] = useState([]);
   const [filteredFreelancers, setFilteredFreelancers] = useState([]);
   const [skillFilter, setSkillFilter] = useState('');
@@ -204,90 +206,140 @@ const Freelancers = ({ navigation }) => {
   // Affichage d'une erreur
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={[styles.button, styles.retryButton]} onPress={loadFreelancers}>
-          <Text style={styles.buttonText}>Réessayer</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" />
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+            <Text style={styles.headerText}>Freelancers</Text>
+          </View>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={[styles.button, styles.retryButton]} onPress={loadFreelancers}>
+              <Text style={styles.buttonText}>Réessayer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Section de filtrage */}
-      <View style={styles.filterSection}>
-        <Text style={styles.sectionTitle}>Filter Freelancers</Text>
-        
-        <TextInput
-          style={styles.input}
-          placeholder="Rechercher par compétences (React, PHP, etc.)"
-          value={skillFilter}
-          onChangeText={setSkillFilter}
-        />
-        
-        <View style={styles.rateFilterContainer}>
-          <TextInput
-            style={[styles.input, styles.rateInput]}
-            placeholder="Tarif min (TND)"
-            value={minRate}
-            onChangeText={setMinRate}
-            keyboardType="numeric"
-          />
-          
-          <TextInput
-            style={[styles.input, styles.rateInput]}
-            placeholder="Tarif max (TND)"
-            value={maxRate}
-            onChangeText={setMaxRate}
-            keyboardType="numeric"
-          />
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+          <Text style={styles.headerText}>Freelancers</Text>
         </View>
         
-        <View style={styles.buttonGroup}>
-          <TouchableOpacity 
-            style={[styles.button, styles.applyButton]} 
-            onPress={applyFilters}
-          >
-            <Text style={styles.buttonText}>Appliquer filtres</Text>
-          </TouchableOpacity>
+        <View style={styles.contentContainer}>
+          {/* Section de filtrage */}
+          <View style={styles.filterSection}>
+            <Text style={styles.sectionTitle}>Filter Freelancers</Text>
+            
+            <TextInput
+              style={styles.input}
+              placeholder="Rechercher par compétences (React, PHP, etc.)"
+              value={skillFilter}
+              onChangeText={setSkillFilter}
+            />
+            
+            <View style={styles.rateFilterContainer}>
+              <TextInput
+                style={[styles.input, styles.rateInput]}
+                placeholder="Tarif min (TND)"
+                value={minRate}
+                onChangeText={setMinRate}
+                keyboardType="numeric"
+              />
+              
+              <TextInput
+                style={[styles.input, styles.rateInput]}
+                placeholder="Tarif max (TND)"
+                value={maxRate}
+                onChangeText={setMaxRate}
+                keyboardType="numeric"
+              />
+            </View>
+            
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity 
+                style={[styles.button, styles.applyButton]} 
+                onPress={applyFilters}
+              >
+                <Text style={styles.buttonText}>Appliquer filtres</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.button, styles.clearButton]} 
+                onPress={clearFilters}
+              >
+                <Text style={styles.buttonText}>Réinitialiser</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
           
-          <TouchableOpacity 
-            style={[styles.button, styles.clearButton]} 
-            onPress={clearFilters}
-          >
-            <Text style={styles.buttonText}>Réinitialiser</Text>
-          </TouchableOpacity>
+          {/* Résultats */}
+          <Text style={styles.resultsCount}>
+            {filteredFreelancers.length} freelancers trouvés
+          </Text>
+          
+          {loading ? (
+            <ActivityIndicator size="large" color="#0F2573" style={styles.loader} />
+          ) : filteredFreelancers.length > 0 ? (
+            <FlatList
+              data={filteredFreelancers}
+              renderItem={renderFreelancerItem}
+              keyExtractor={(item, index) => item.id || index.toString()}
+              contentContainerStyle={styles.listContainer}
+            />
+          ) : (
+            <Text style={styles.noResults}>
+              Aucun freelancer ne correspond à vos critères
+            </Text>
+          )}
         </View>
       </View>
-      
-      {/* Résultats */}
-      <Text style={styles.resultsCount}>
-        {filteredFreelancers.length} freelancers trouvés
-      </Text>
-      
-      {loading ? (
-        <ActivityIndicator size="large" color="#0F2573" style={styles.loader} />
-      ) : filteredFreelancers.length > 0 ? (
-        <FlatList
-          data={filteredFreelancers}
-          renderItem={renderFreelancerItem}
-          keyExtractor={(item, index) => item.id || index.toString()}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <Text style={styles.noResults}>
-          Aucun freelancer ne correspond à vos critères
-        </Text>
-      )}
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0F2573',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFF',
+    backgroundColor: '#F0F8FF',
+  },
+  header: {
+    backgroundColor: '#0F2573',
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  backButton: {
+    marginRight: 10,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  contentContainer: {
+    flex: 1,
     padding: 15,
   },
   filterSection: {
