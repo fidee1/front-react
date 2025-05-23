@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, TextInput, ScrollView, SafeAreaView, StatusBar } from 'react-native'; // Added StatusBar
 import { Card, Badge, Button } from 'react-native-paper';
 import { AntDesign, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -7,9 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 const MyProject = () => {
   const navigation = useNavigation();
   const [projects] = useState([
-    { id: 1, title: 'Web Design for E-Commerce', description: 'Building a responsive website.', client: 'Client A', deadline: '2025-05-15', status: 'in-progress', completionDate: '' },
-    { id: 2, title: 'Mobile App Development', description: 'Developing a fitness app.', client: 'Client B', deadline: '2025-06-01', status: 'completed', completionDate: '2025-04-20' },
-    { id: 3, title: 'Logo Design', description: 'Creating a brand identity.', client: 'Client C', deadline: '2025-05-10', status: 'in-progress', completionDate: '' },
+    { id: 1, title: 'Web Design for E-Commerce', description: 'Building a responsive website.', client: 'ahmed', deadline: '2025-07-3', status: 'in-progress', completionDate: '' },
+    { id: 2, title: 'Mobile App Development', description: 'Developing a fitness app.', client: 'siwar', deadline: '2025-06-20', status: 'completed', completionDate: '2025-04-20' },
+    { id: 3, title: 'Logo Design', description: 'Creating a brand identity.', client: 'rami', deadline: '2025-05-10', status: 'in-progress', completionDate: '' },
   ]);
 
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
@@ -91,18 +91,17 @@ const MyProject = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-        {/* Header Section with back button */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#0F2573" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Projects</Text>
-          <Badge style={styles.ongoingBadge}>
-            {ongoingProjects.length} Ongoing
-          </Badge>
-        </View>
+      <StatusBar barStyle="light-content" /> {/* Added StatusBar like in profile */}
+      {/* Header Section with back button - Styled like profile */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="white" /> {/* Icon color changed to white */}
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Projects</Text>
+        {/* Removed ongoingBadge */}
+      </View>
 
+      <ScrollView style={styles.container}>
         {/* Ongoing Projects */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Ongoing Projects</Text>
@@ -197,43 +196,32 @@ const MyProject = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8FAFF',
+    backgroundColor: '#0F2573', // Changed background color
   },
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    backgroundColor: '#F8FAFF',
+    backgroundColor: '#F0F8FF', // Changed background color to match profile content area
+    paddingTop: 16, // Added padding top to space content from header
   },
   header: {
+    backgroundColor: '#0F2573', // Added background color
+    padding: 15, // Added padding
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    marginTop: 10,
+    // Removed justifyContent, marginBottom, marginTop
   },
   backButton: {
-    padding: 4,
-    marginLeft: -18,
-    marginTop: 10,
+    marginRight: 10, // Added margin like in profile
+    // Removed padding, marginLeft, marginTop
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#0F2573',
-    flex: 1,
-    textAlign: 'center',
-    marginLeft: 0,
-    marginTop: 15, // To compensate for back button width
+    color: 'white', // Changed text color
+    // Removed flex, textAlign, marginLeft, marginTop
   },
-  ongoingBadge: {
-    backgroundColor: '#0F2573',
-    color: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 0,
-    borderRadius: 10,
-    fontSize: 12,
-    fontWeight: '500',
-  },
+  // Removed ongoingBadge style
   sectionContainer: {
     marginBottom: 20,
   },

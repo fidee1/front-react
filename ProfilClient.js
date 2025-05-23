@@ -1,22 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Modal, TouchableOpacity, Image, Alert, SafeAreaView, StatusBar } from 'react-native';
-import { Button } from 'react-native-paper';
-import * as ImagePicker from 'expo-image-picker';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  Modal,
+  TouchableOpacity,
+  Image,
+  Alert,
+  SafeAreaView,
+  StatusBar,
+} from "react-native";
+import { Button } from "react-native-paper";
+import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { update_profile } from "./api";
 
 const ProfilClient = ({ route }) => {
   const navigation = useNavigation();
   const isExternalView = route?.params?.isExternalView || false;
+
   const [profile, setProfile] = useState({
-    id: 'client123',
-    companyName: '',
-    companyDescription: '',
-    clientNeeds: '',
+    id: "",
+    companyName: "",
+    companyDescription: "",
+    clientNeeds: "",
     rating: 0,
-    email: '',
-    phone: '',
-    location: ''
+    email: "",
+    phone: "",
+    location: "",
   });
 
   const [editedProfile, setEditedProfile] = useState({ ...profile });
@@ -25,33 +40,47 @@ const ProfilClient = ({ route }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    (async () => {
+      try {
+        const storedUser = await AsyncStorage.getItem("user");
+        console.log("Contenu brut de AsyncStorage au démarrage :", storedUser);
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          console.log("Utilisateur chargé depuis AsyncStorage :", parsedUser);
+          setProfile(parsedUser);
+        } else {
+          console.log("Aucun utilisateur trouvé dans AsyncStorage");
+        }
+      } catch (error) {
+        console.log(
+          "Erreur lors du chargement de l'utilisateur depuis AsyncStorage :",
+          error
+        );
+      } finally {
+        console.log("Chargement terminé");
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
     const fetchProfileData = async () => {
       try {
         // Simulation de chargement des données
         setTimeout(() => {
-          setProfile({
-            id: 'client123',
-            companyName: 'Tech Solutions Inc.',
-            companyDescription: 'We provide innovative tech solutions for businesses of all sizes.',
-            clientNeeds: 'Looking for experienced React Native developers',
-            rating: 4,
-            email: 'contact@techsolutions.com',
-            phone: '+1 555-123-4567',
-            location: 'Tunis, Tunisia'
-          });
           setEditedProfile({
-            companyName: 'Tech Solutions Inc.',
-            companyDescription: 'We provide innovative tech solutions for businesses of all sizes.',
-            clientNeeds: 'Looking for experienced React Native developers',
+            companyName: "Tech Solutions Inc.",
+            companyDescription:
+              "We provide innovative tech solutions for businesses of all sizes.",
+            clientNeeds: "Looking for experienced React Native developers",
             rating: 4,
-            email: 'contact@techsolutions.com',
-            phone: '+1 555-123-4567',
-            location: 'Tunis, Tunisia'
+            email: "contact@techsolutions.com",
+            phone: "+1 555-123-4567",
+            location: "Tunis, Tunisia",
           });
           setIsLoading(false);
         }, 1000);
       } catch (error) {
-        Alert.alert('Error', 'Failed to load profile data');
+        Alert.alert("Error", "Failed to load profile data");
         setIsLoading(false);
       }
     };
@@ -61,8 +90,11 @@ const ProfilClient = ({ route }) => {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission required', 'We need access to your photos to change your profile image');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission required",
+        "We need access to your photos to change your profile image"
+      );
       return;
     }
 
@@ -78,48 +110,56 @@ const ProfilClient = ({ route }) => {
     }
   };
 
-  const handleSaveProfile = async () => {
+  const updateProfile = async () => {
     setIsLoading(true);
     try {
-      // Simulation de sauvegarde
-      setTimeout(() => {
-        setProfile(editedProfile);
-        setModalVisible(false);
-        Alert.alert('Success', 'Profile updated successfully');
-        setIsLoading(false);
-      }, 1000);
+      console.log("editedProfile ", editedProfile);
+      const res = update_profile(editedProfile);
+      console.log("api update profile ", res);
+
+      setProfile(editedProfile);
+
+      setModalVisible(false);
+      Alert.alert("Success", "Profile updated successfully");
+      setIsLoading(false);
     } catch (error) {
-      Alert.alert('Error', 'Failed to update profile');
+      Alert.alert("Error", "Failed to load profile data");
       setIsLoading(false);
     }
   };
 
   const handleStartChat = () => {
-    navigation.navigate('Inbox', { 
+    navigation.navigate("Inbox", {
       recipientId: freelance.id,
       recipientName: `${freelance.user.name} ${freelance.user.lastName}`,
-      isFreelancer: true
+      isFreelancer: true,
     });
   };
 
   const renderStars = (rating, editable = false) => {
-    return Array(5).fill(0).map((_, i) => (
-      <MaterialIcons
-        key={i}
-        name={i < rating ? 'star' : 'star-border'}
-        size={24}
-        color={i < rating ? '#FFD700' : '#ccc'}
-        onPress={editable ? () => {
-          setEditedProfile({...editedProfile, rating: i + 1});
-        } : null}
-      />
-    ));
+    return Array(5)
+      .fill(0)
+      .map((_, i) => (
+        <MaterialIcons
+          key={i}
+          name={i < rating ? "star" : "star-border"}
+          size={24}
+          color={i < rating ? "#FFD700" : "#ccc"}
+          onPress={
+            editable
+              ? () => {
+                  setEditedProfile({ ...editedProfile, rating: i + 1 });
+                }
+              : null
+          }
+        />
+      ));
   };
 
   const renderField = (label, value, isLast = false) => (
     <View style={[styles.formGroup, isLast && { marginBottom: 0 }]}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.fieldValue}>{value || 'Not specified'}</Text>
+      <Text style={styles.fieldValue}>{value || "Not specified"}</Text>
     </View>
   );
 
@@ -129,7 +169,7 @@ const ProfilClient = ({ route }) => {
         <StatusBar barStyle="light-content" />
         <View style={styles.container}>
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.goBack()}
             >
@@ -150,7 +190,7 @@ const ProfilClient = ({ route }) => {
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
@@ -158,35 +198,48 @@ const ProfilClient = ({ route }) => {
           </TouchableOpacity>
           <Text style={styles.headerText}>Client Profile</Text>
         </View>
-        
-        <ScrollView style={styles.contentContainer} contentContainerStyle={styles.scrollContentContainer}>
+
+        <ScrollView
+          style={styles.contentContainer}
+          contentContainerStyle={styles.scrollContentContainer}
+        >
           <View style={styles.profileCard}>
             <View style={styles.avatarContainer}>
               <TouchableOpacity onPress={pickImage}>
                 {profileImage ? (
-                  <Image source={{ uri: profileImage }} style={styles.profileImage} />
+                  <Image
+                    source={{ uri: profileImage }}
+                    style={styles.profileImage}
+                  />
                 ) : (
                   <View style={styles.avatarPlaceholder}>
-                    <MaterialIcons name="add-a-photo" size={40} color="#5E548E" />
+                    <MaterialIcons
+                      name="add-a-photo"
+                      size={40}
+                      color="#5E548E"
+                    />
                   </View>
                 )}
               </TouchableOpacity>
-              
+
               <View style={styles.ratingContainer}>
                 {renderStars(profile.rating)}
               </View>
             </View>
 
-            {renderField('Company Name', profile.companyName)}
-            {renderField('Email', profile.email)}
-            {renderField('Phone', profile.phone)}
-            {renderField('Location', profile.location)}
-            {renderField('Company Description', profile.companyDescription)}
-            {renderField('Client Needs', profile.clientNeeds, true)}
+            {renderField("Company Name", profile.profile.companyName)}
+            {renderField("Email", profile.email)}
+            {renderField("Phone", profile.profile.phone)}
+            {renderField("Location", profile.profile.location)}
+            {renderField(
+              "Company Description",
+              profile.profile.companyDescription
+            )}
+            {renderField("Client Needs", profile.profile.clientNeeds, true)}
 
             {!isExternalView && (
-              <Button 
-                mode="contained" 
+              <Button
+                mode="contained"
                 onPress={() => {
                   setEditedProfile(profile);
                   setModalVisible(true);
@@ -200,8 +253,8 @@ const ProfilClient = ({ route }) => {
             )}
 
             {isExternalView && (
-              <Button 
-                mode="contained" 
+              <Button
+                mode="contained"
                 onPress={handleStartChat}
                 style={styles.chatButton}
                 labelStyle={styles.buttonLabel}
@@ -233,7 +286,9 @@ const ProfilClient = ({ route }) => {
                 <TextInput
                   style={styles.input}
                   value={editedProfile.companyName}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, companyName: text})}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, companyName: text })
+                  }
                   placeholder="Enter company name"
                 />
               </View>
@@ -243,7 +298,9 @@ const ProfilClient = ({ route }) => {
                 <TextInput
                   style={styles.input}
                   value={editedProfile.email}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, email: text})}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, email: text })
+                  }
                   placeholder="Enter email"
                   keyboardType="email-address"
                 />
@@ -254,7 +311,9 @@ const ProfilClient = ({ route }) => {
                 <TextInput
                   style={styles.input}
                   value={editedProfile.phone}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, phone: text})}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, phone: text })
+                  }
                   placeholder="Enter phone number"
                   keyboardType="phone-pad"
                 />
@@ -265,7 +324,9 @@ const ProfilClient = ({ route }) => {
                 <TextInput
                   style={styles.input}
                   value={editedProfile.location}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, location: text})}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, location: text })
+                  }
                   placeholder="Enter location"
                 />
               </View>
@@ -275,7 +336,12 @@ const ProfilClient = ({ route }) => {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editedProfile.companyDescription}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, companyDescription: text})}
+                  onChangeText={(text) =>
+                    setEditedProfile({
+                      ...editedProfile,
+                      companyDescription: text,
+                    })
+                  }
                   placeholder="Describe your company"
                   multiline
                   numberOfLines={4}
@@ -287,7 +353,9 @@ const ProfilClient = ({ route }) => {
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   value={editedProfile.clientNeeds}
-                  onChangeText={(text) => setEditedProfile({...editedProfile, clientNeeds: text})}
+                  onChangeText={(text) =>
+                    setEditedProfile({ ...editedProfile, clientNeeds: text })
+                  }
                   placeholder="Describe your needs"
                   multiline
                   numberOfLines={4}
@@ -303,8 +371,8 @@ const ProfilClient = ({ route }) => {
             </ScrollView>
 
             <View style={styles.modalFooter}>
-              <Button 
-                mode="outlined" 
+              <Button
+                mode="outlined"
                 onPress={() => setModalVisible(false)}
                 style={styles.cancelButton}
                 labelStyle={styles.cancelButtonLabel}
@@ -312,9 +380,9 @@ const ProfilClient = ({ route }) => {
               >
                 Cancel
               </Button>
-              <Button 
-                mode="contained" 
-                onPress={handleSaveProfile}
+              <Button
+                mode="contained"
+                onPress={updateProfile}
                 style={styles.saveButton}
                 labelStyle={styles.buttonLabel}
                 loading={isLoading}
@@ -333,25 +401,25 @@ const ProfilClient = ({ route }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0F2573',
+    backgroundColor: "#0F2573",
   },
   container: {
     flex: 1,
-    backgroundColor: '#F0F8FF',
+    backgroundColor: "#F0F8FF",
   },
   header: {
-    backgroundColor: '#0F2573',
+    backgroundColor: "#0F2573",
     padding: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   backButton: {
     marginRight: 10,
   },
   headerText: {
-    color: 'white',
+    color: "white",
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   contentContainer: {
     flex: 1,
@@ -361,21 +429,21 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   profileCard: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
   },
   avatarContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   profileImage: {
@@ -388,14 +456,14 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: '#f0f0f0',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 10,
   },
   ratingContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 5,
   },
   formGroup: {
@@ -403,81 +471,81 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
     marginBottom: 6,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   fieldValue: {
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   input: {
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
   },
   textArea: {
     minHeight: 100,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   editButton: {
     borderRadius: 8,
-    backgroundColor: '#0F2573',
+    backgroundColor: "#0F2573",
     marginTop: 20,
     paddingVertical: 6,
   },
   chatButton: {
     borderRadius: 8,
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     marginTop: 10,
     paddingVertical: 6,
   },
   buttonLabel: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0F2573',
+    fontWeight: "bold",
+    color: "#0F2573",
   },
   modalContent: {
     padding: 16,
   },
   modalFooter: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: "#eee",
   },
   cancelButton: {
     marginRight: 10,
-    borderColor: '#0F2573',
+    borderColor: "#0F2573",
   },
   cancelButtonLabel: {
-    color: '#0F2573',
+    color: "#0F2573",
   },
   saveButton: {
-    backgroundColor: '#0F2573',
+    backgroundColor: "#0F2573",
     minWidth: 120,
   },
 });

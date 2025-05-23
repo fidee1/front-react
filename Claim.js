@@ -224,6 +224,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderRadius: 12,
     backgroundColor: 'white',
+     marginTop:50,
   },
   sectionTitle: {
     fontSize: 18,

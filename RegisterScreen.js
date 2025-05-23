@@ -79,7 +79,7 @@ export default function RegisterScreen({ navigation }) {
 
   return (
     <ImageBackground
-      source={require("./assets/images/fond6.jpg")}
+      source={require("./assets/images/fond8.jpg")}
       style={styles.background}
     >
       <ScrollView contentContainerStyle={styles.container}>

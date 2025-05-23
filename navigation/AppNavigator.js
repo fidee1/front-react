@@ -27,7 +27,7 @@ export default function AppNavigator() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSplashVisible(false); // Cache la SplashScreen après 3 secondes
-    },8000)
+    }, 8000);
     return () => clearTimeout(timer); // Nettoie le timer
   }, []);
 
@@ -51,9 +51,12 @@ export default function AppNavigator() {
           <Stack.Screen name="Claim" component={Claim} />
           <Stack.Screen name="Invoices" component={Invoices} />
           <Stack.Screen name="Inbox" component={Inbox} />
-          <Stack.Screen name="ProfilClient"component={ProfilClient}/>
-          <Stack.Screen name="ProjectManagement"component={ProjectManagement}/>
-          <Stack.Screen name="projectlist"component={projectlist}/>
+          <Stack.Screen name="ProfilClient" component={ProfilClient} />
+          <Stack.Screen
+            name="ProjectManagement"
+            component={ProjectManagement}
+          />
+          <Stack.Screen name="projectlist" component={projectlist} />
           <Stack.Screen name="Freelancers" component={Freelancers} />
           <Stack.Screen name="AddProject" component={AddProject} />
         </>

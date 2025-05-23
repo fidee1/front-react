@@ -19,8 +19,10 @@ import { Ionicons, FontAwesome5 } from "@expo/vector-icons";
 import { logout } from "./authSlice";
 import api from "./api";
 import Constants from 'expo-constants';
+import { Dimensions } from 'react-native';
 import { Platform, StatusBar } from 'react-native';
-const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 0 : 0;
+const screenHeight = Dimensions.get('window').height;
+const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight || 10 : 10;
 function SidebarNav() {
   const [showForm, setShowForm] = useState(false);
   const [projectTitle, setProjectTitle] = useState("");
@@ -36,29 +38,9 @@ function SidebarNav() {
     { id: 2, name: "Sarah M.", skills: "Design, UI/UX", rate: 45 },
     { id: 3, name: "Alex T.", skills: "Python, Django", rate: 60 },
     { id: 4, name: "Emma L.", skills: "iOS, Swift", rate: 55 },
-    { id: 5, name: "Mike R.", skills: "Android, Kotlin", rate: 50 },
+    { id: 5, name: "Mike R.", skills: "Android, Kotlin", rate: 50},
   ]);
   
-  const handleFilter = () => {
-    console.log("Skills:", skills);
-    console.log("Budget Range:", budgetRange);
-    console.log("Projects Count:", projectsCount);
-    setShowFilterModal(false);
-  };
-  
-  const handlePublishProject = () => {
-    if (!projectTitle || !projectDescription || !projectBudget || !projectDeadline) {
-      Alert.alert("Error", "All fields must be filled!");
-    } else {
-      Alert.alert("Success", "Your project has been published!");
-      setProjectTitle("");
-      setProjectDescription("");
-      setProjectBudget("");
-      setProjectDeadline("");
-      setShowForm(false);
-    }
-  };
-
   const userRole = useSelector((state) => state.auth.role);
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
@@ -197,13 +179,44 @@ function SidebarNav() {
   
         <View style={styles.content}>
           {userRole === "freelancer" ? (
-            <View style={styles.roleContent}>
-              <Text style={styles.roleTitle}>Bienvenue, Freelancer !</Text>
-              <Text style={styles.roleText}>
-                Ici, vous pouvez gérer vos offres, projets, et consulter vos factures.
-              </Text>
-            </View>
-          ) : userRole === "client" ? (
+  <View style={[styles.roleContent, styles.freelancerTheme]}>
+    <Text style={styles.roleTitle}>
+      {user?.name ? `Welcome ${user.name},` : 'Welcome,'} Super Freelancer! 👋
+    </Text>
+    <Text style={styles.motivationText}>
+      Your next great opportunity starts here! Find projects that perfectly match your unique skills.
+    </Text>
+    <View style={styles.featuresContainer}>
+      {[
+        '💼 Manage proposals & projects',
+        '📝 Track invoices ',
+        '📬 Never miss an update',
+        '⭐ Showcase your best work'
+      ].map((feature, index) => (
+        <Text key={index} style={styles.featureItem}>
+          {feature}
+        </Text>
+      ))}
+    </View>
+    <View style={styles.specialFeatureContainer}>
+      <Text style={styles.specialFeatureText}>
+        🔍 Explore thousands of IT projects in all domains:
+      </Text>
+      <Text style={styles.domainsList}>
+        Web Development • Mobile Apps • AI/ML • Cybersecurity • Cloud Computing • DevOps
+      </Text>
+      
+      <TouchableOpacity 
+        style={styles.searchButton}
+        onPress={() => navigation.navigate('ListOfOffers')}
+      >
+        <Text style={styles.searchButtonText}>
+          🚀 Search Projects Now
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+)   : userRole === "client" ? (
             <>
               
               {/* Liste horizontale des freelancers */}
@@ -347,21 +360,21 @@ function SidebarNav() {
       style={styles.bottomNavItem} 
       onPress={() => navigation.navigate("ListOfOffers")}
     >
-      <Ionicons name="briefcase-outline" size={20} color="#041D56" />
+      <Ionicons name="briefcase-outline" size={18} color="#041D56" />
       <Text style={styles.bottomNavText}>Offers</Text>
     </TouchableOpacity>
     <TouchableOpacity 
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("Claim")}
             >
-              <Ionicons name="library-outline" size={20} color="#041D56" />
+              <Ionicons name="library-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Claim</Text>
             </TouchableOpacity>
     <TouchableOpacity 
       style={styles.bottomNavItem} 
       onPress={() => navigation.navigate("MyProject")}
     >
-      <Ionicons name="folder-outline" size={20} color="#041D56" />
+      <Ionicons name="folder-outline" size={18} color="#041D56" />
       <Text style={styles.bottomNavText}>Projects</Text>
     </TouchableOpacity>
 
@@ -369,21 +382,21 @@ function SidebarNav() {
       style={styles.centralButton} 
       onPress={() => navigation.navigate("Profile")}
     >
-      <Ionicons name="person-outline" size={32} color="#FFF" />
+      <Ionicons name="person-outline" size={25} color="#FFF" />
     </TouchableOpacity>
 
     <TouchableOpacity 
       style={styles.bottomNavItem} 
       onPress={() => navigation.navigate("Inbox")}
     >
-      <Ionicons name="chatbubbles-outline" size={20} color="#041D56" />
+      <Ionicons name="chatbubbles-outline" size={18} color="#041D56" />
       <Text style={styles.bottomNavText}>Inbox</Text>
     </TouchableOpacity>
     <TouchableOpacity 
               style={styles.bottomNavItem} 
               onPress={() => navigation.navigate("Invoices")}
             >
-              <Ionicons name="cash-outline" size={20} color="#041D56" />
+              <Ionicons name="cash-outline" size={18} color="#041D56" />
               <Text style={styles.bottomNavText}>Invoices</Text>
             </TouchableOpacity>
     <TouchableOpacity 
@@ -445,7 +458,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: 150,
-    height: "98.5%",
+    height: "95.2%",
     backgroundColor: "#FFFFFF",
     paddingVertical: 20,
     zIndex: 20,
@@ -545,8 +558,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 5,
-  },
   
+},
   bottomNavItem: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -660,18 +673,27 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   bottomSidebar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    backgroundColor: "#F9F9F9",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: "#E0E0E0",
-    position: "absolute", // Assure que la barre est positionnée de manière absolue
-    bottom: 0, // La place au bas de l'écran
-    width: "100%", // Étire la barre sur toute la largeur de l'écran
-    zIndex: 10, // S'assure qu'elle reste au-dessus des autres éléments
-  },
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+  backgroundColor: "#F9F9F9",
+  paddingVertical: 12,
+  position: "absolute",
+  bottom: Platform.select({
+    android: Dimensions.get('window').height * 0.06,
+    default: Dimensions.get('window').height * 0.03
+  }),
+  width: Dimensions.get('window').width, // Largeur exacte de l'écran
+  height: 60, // Hauteur fixe pour plus de fiabilité
+  zIndex: 10,
+  borderTopWidth: 1,
+  borderTopColor: "#E0E0E0",
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: -2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 3,
+},
   bottomNavItem: {
     alignItems: "center",
     justifyContent: "center",
@@ -697,6 +719,88 @@ const styles = StyleSheet.create({
     elevation: 5,
     position: "relative",
     bottom: 20, // Légèrement surélevé par rapport à la barre
+  },
+  roleContent: {
+    padding: 10,
+    borderRadius: 12,
+    margin: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
+    marginTop: -25,
+  },
+  freelancerTheme: {
+    backgroundColor: '#F0F9FF',
+    borderLeftWidth: 4,
+    borderLeftColor: '#3B82F6',
+  },
+  clientTheme: {
+    backgroundColor: '#F0FDF4',
+    borderLeftWidth: 4,
+    borderLeftColor: '#10B981',
+  },
+  roleTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  motivationText: {
+    fontSize: 16,
+    color: '#475569',
+    fontStyle: 'italic',
+    marginBottom: 16,
+    lineHeight: 24,
+  },
+  featuresContainer: {
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+    paddingTop: 1,
+    marginTop: 10,
+  },
+  featureItem: {
+    fontSize: 15,
+    color: '#475569',
+    marginVertical: 4,
+    lineHeight: 24,
+  },
+  specialFeatureContainer: {
+    backgroundColor: '#EFF6FF',
+    borderRadius: 8,
+    padding: 20,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+    marginTop: 10,
+  },
+  specialFeatureText: {
+    fontSize: 16,
+    color: '#1E40AF',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  domainsList: {
+    fontSize: 14,
+    color: '#3B82F6',
+    marginBottom: 12,
+    fontStyle: 'italic',
+  },
+  searchButton: {
+    backgroundColor: '#3B82F6',
+    borderRadius: 6,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  searchButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
 

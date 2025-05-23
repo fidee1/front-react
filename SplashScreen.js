@@ -4,7 +4,7 @@ import { StyleSheet, View, Image, ImageBackground } from 'react-native';
 const SplashScreen = () => {
   return (
     <ImageBackground
-      source={require('./assets/images/fond6.jpg')} // Image de fond
+      source={require('./assets/images/fond8.jpg')} // Image de fond
       style={styles.background}
       resizeMode="cover" // Assure que l'image de fond couvre tout l'écran
     >
