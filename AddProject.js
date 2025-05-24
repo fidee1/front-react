@@ -1,104 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TextInput,
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Alert
-} from 'react-native';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+  Alert,
+  StyleSheet,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { add_project } from "./services/project";
+
+const initialProjectState = {
+  titre: "",
+  description: "",
+  skills: [],
+  budget: "",
+  date_limite: "",
+};
 
 const AddProject = () => {
   const navigation = useNavigation();
-  
-  // États pour les champs du formulaire
-  const [projectName, setProjectName] = useState('');
-  const [description, setDescription] = useState('');
-  const [budget, setBudget] = useState('');
-  const [deadline, setDeadline] = useState('');
-  const [skills, setSkills] = useState('');
-  
-  // Validation des champs
+  const [project, setProject] = useState(initialProjectState);
   const [errors, setErrors] = useState({});
-  
-  // Fonction pour valider le formulaire
+
   const validateForm = () => {
     let isValid = true;
     let newErrors = {};
-    
-    if (!projectName.trim()) {
-      newErrors.projectName = 'Project name is required';
+
+    if (!project.titre.trim()) {
+      newErrors.titre = "Project name is required";
       isValid = false;
     }
-    
-    if (!description.trim()) {
-      newErrors.description = 'Description is required';
+
+    if (!project.description.trim()) {
+      newErrors.description = "Description is required";
       isValid = false;
     }
-    
-    if (!budget.trim()) {
-      newErrors.budget = 'Budget is required';
+
+    if (!project.budget.trim()) {
+      newErrors.budget = "Budget is required";
       isValid = false;
-    } else if (isNaN(parseFloat(budget)) || parseFloat(budget) <= 0) {
-      newErrors.budget = 'Budget must be a positive number';
-      isValid = false;
-    }
-    
-    if (!deadline.trim()) {
-      newErrors.deadline = 'Deadline is required';
+    } else if (isNaN(parseFloat(project.budget)) || parseFloat(project.budget) <= 0) {
+      newErrors.budget = "Budget must be a positive number";
       isValid = false;
     }
-    
-    if (!skills.trim()) {
-      newErrors.skills = 'Required skills are required';
+
+    if (!project.date_limite.trim()) {
+      newErrors.date_limite = "Deadline is required";
       isValid = false;
     }
-    
+
+    if (project.skills.length === 0) {
+      newErrors.skills = "Required skills are required";
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
-  
-  // Fonction pour soumettre le formulaire
-  const handleSubmit = () => {
+
+  const handleInputChange = (field, value) => {
+    setProject((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async () => {
     if (validateForm()) {
-      // Ici, vous feriez normalement un appel API pour créer le projet
-      // Pour l'instant, nous allons simplement afficher une alerte de succès
+      console.log("Submitting project:", project);
+      const res = await add_project(project)
       
-      const projectData = {
-        name: projectName,
-        description,
-        budget: parseFloat(budget),
-        deadline,
-        skills,
-        status: 'pending'
-      };
-      
-      console.log('Submitting project:', projectData);
-      
-      Alert.alert(
-        'Success',
-        'Project created successfully!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack()
-          }
-        ]
-      );
+      Alert.alert("Success", "Project created successfully!", [
+        {
+          text: "OK",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
     }
   };
-  
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
@@ -106,72 +94,91 @@ const AddProject = () => {
           </TouchableOpacity>
           <Text style={styles.headerText}>Add New Project</Text>
         </View>
-        
+
         <ScrollView style={styles.formContainer}>
           <Text style={styles.sectionTitle}>Project Details</Text>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Project Name</Text>
             <TextInput
-              style={[styles.input, errors.projectName ? styles.inputError : null]}
+              style={[styles.input, errors.titre ? styles.inputError : null]}
               placeholder="Enter project name"
-              value={projectName}
-              onChangeText={setProjectName}
+              value={project.titre}
+              onChangeText={(text) => handleInputChange("titre", text)}
             />
-            {errors.projectName && <Text style={styles.errorText}>{errors.projectName}</Text>}
+            {errors.titre && (
+              <Text style={styles.errorText}>{errors.titre}</Text>
+            )}
           </View>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Description</Text>
             <TextInput
-              style={[styles.input, styles.textArea, errors.description ? styles.inputError : null]}
+              style={[
+                styles.input,
+                styles.textArea,
+                errors.description ? styles.inputError : null,
+              ]}
               placeholder="Describe your project in detail"
               multiline
               numberOfLines={4}
-              value={description}
-              onChangeText={setDescription}
+              value={project.description}
+              onChangeText={(text) => handleInputChange("description", text)}
             />
-            {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
+            {errors.description && (
+              <Text style={styles.errorText}>{errors.description}</Text>
+            )}
           </View>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Budget (TND)</Text>
             <TextInput
               style={[styles.input, errors.budget ? styles.inputError : null]}
               placeholder="Enter your budget"
               keyboardType="numeric"
-              value={budget}
-              onChangeText={setBudget}
+              value={project.budget}
+              onChangeText={(text) => handleInputChange("budget", text)}
             />
-            {errors.budget && <Text style={styles.errorText}>{errors.budget}</Text>}
+            {errors.budget && (
+              <Text style={styles.errorText}>{errors.budget}</Text>
+            )}
           </View>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Deadline</Text>
             <TextInput
-              style={[styles.input, errors.deadline ? styles.inputError : null]}
+              style={[
+                styles.input,
+                errors.date_limite ? styles.inputError : null,
+              ]}
               placeholder="YYYY-MM-DD"
-              value={deadline}
-              onChangeText={setDeadline}
+              value={project.date_limite}
+              onChangeText={(text) => handleInputChange("date_limite", text)}
             />
-            {errors.deadline && <Text style={styles.errorText}>{errors.deadline}</Text>}
+            {errors.date_limite && (
+              <Text style={styles.errorText}>{errors.date_limite}</Text>
+            )}
           </View>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Required Skills</Text>
             <TextInput
               style={[styles.input, errors.skills ? styles.inputError : null]}
               placeholder="e.g. React Native, PHP, Design"
-              value={skills}
-              onChangeText={setSkills}
+              value={project.skills.join(", ")}
+              onChangeText={(text) =>
+                handleInputChange(
+                  "skills",
+                  text.split(",").map((skill) => skill.trim())
+                )
+              }
             />
-            {errors.skills && <Text style={styles.errorText}>{errors.skills}</Text>}
+            {errors.skills && (
+              <Text style={styles.errorText}>{errors.skills}</Text>
+            )}
           </View>
-          
-          <TouchableOpacity 
-            style={styles.submitButton}
-            onPress={handleSubmit}
-          >
+
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
             <Text style={styles.submitButtonText}>Create Project</Text>
           </TouchableOpacity>
         </ScrollView>

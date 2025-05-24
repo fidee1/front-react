@@ -217,42 +217,46 @@ function SidebarNav() {
     </View>
   </View>
 )   : userRole === "client" ? (
-            <>
-              
-              {/* Liste horizontale des freelancers */}
-              <View style={styles.freelancersSection}>
-                <Text style={styles.sectionTitle}>Top Freelancers</Text>
-                <ScrollView 
-                  horizontal 
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.freelancersScroll}
-                >
-                  {freelancers.map((freelancer) => (
-                    <TouchableOpacity 
-                      key={freelancer.id} 
-                      style={styles.freelancerCard}
-                    >
-                      <View style={styles.avatar}>
-                        <Ionicons name="person-circle-outline" size={40} color="#041D56" />
-                      </View>
-                      <Text style={styles.freelancerName}>{freelancer.name}</Text>
-                      <Text style={styles.freelancerSkills}>{freelancer.skills}</Text>
-                      <Text style={styles.freelancerRate}>${freelancer.rate}/hr</Text>
-                    </TouchableOpacity>
-                  ))}
-                  
-                  {/* Bouton More */}
-                  <TouchableOpacity 
-                    style={styles.moreButton}
-                    onPress={() => navigation.navigate("Freelancers")}
-                  >
-                    <Text style={styles.moreText}>More</Text>
-                    <Ionicons name="chevron-forward" size={20} color="#041D56" />
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
-            </>
-          ) : (
+  <View style={[styles.roleContent, styles.clientTheme]}>
+    <Text style={styles.roleTitle}>
+      {user?.company ? `Welcome ${user.company},` : 'Welcome, Valued Client!'} 👔
+    </Text>
+    <Text style={styles.motivationText}>
+      Find the perfect talent to bring your vision to life!
+    </Text>
+
+    <View style={styles.featuresContainer}>
+      {[
+        '📈 Manage projects & budgets',
+        '🔍 Find top-rated freelancers',
+        '🔒 Secure payment system',
+        '🚀 Launch projects faster'
+      ].map((feature, index) => (
+        <Text key={index} style={styles.featureItem}>
+          {feature}
+        </Text>
+      ))}
+    </View>
+
+    <View style={styles.specialFeatureContainer}>
+      <Text style={styles.specialFeatureText}>
+        🌟 Access top talent across all domains:
+      </Text>
+      <Text style={styles.domainsList}>
+        Full-Stack Developers • Mobile Experts • AI Specialists • Cybersecurity Pros • Cloud Architects
+      </Text>
+      
+      <TouchableOpacity 
+        style={styles.searchButton}
+        onPress={() => navigation.navigate('Freelancers')}
+      >
+        <Text style={styles.searchButtonText}>
+          🔎 Search Freelancers Now
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+): (
             <Text style={styles.roleText}>
               Rôle inconnu. Veuillez contacter l'assistance.
             </Text>
@@ -737,10 +741,10 @@ const styles = StyleSheet.create({
     borderLeftColor: '#3B82F6',
   },
   clientTheme: {
-    backgroundColor: '#F0FDF4',
-    borderLeftWidth: 4,
-    borderLeftColor: '#10B981',
-  },
+  backgroundColor: '#F3FCF7',
+  borderLeftWidth: 4,
+  borderLeftColor: '#10B981',
+},
   roleTitle: {
     fontSize: 22,
     fontWeight: '700',

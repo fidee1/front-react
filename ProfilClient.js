@@ -23,16 +23,7 @@ const ProfilClient = ({ route }) => {
   const navigation = useNavigation();
   const isExternalView = route?.params?.isExternalView || false;
 
-  const [profile, setProfile] = useState({
-    id: "",
-    companyName: "",
-    companyDescription: "",
-    clientNeeds: "",
-    rating: 0,
-    email: "",
-    phone: "",
-    location: "",
-  });
+  const [profile, setProfile] = useState(null);
 
   const [editedProfile, setEditedProfile] = useState({ ...profile });
   const [modalVisible, setModalVisible] = useState(false);
@@ -40,52 +31,23 @@ const ProfilClient = ({ route }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
+    const fetchUserProfile = async () => {
       try {
         const storedUser = await AsyncStorage.getItem("user");
-        console.log("Contenu brut de AsyncStorage au démarrage :", storedUser);
         if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          console.log("Utilisateur chargé depuis AsyncStorage :", parsedUser);
-          setProfile(parsedUser);
-        } else {
-          console.log("Aucun utilisateur trouvé dans AsyncStorage");
+          // Simulate delay
+          setTimeout(() => {
+            setProfile(JSON.parse(storedUser));
+            console.log("profile ", JSON.parse(storedUser));
+            setIsLoading(false);
+          }, 1000);
         }
       } catch (error) {
-        console.log(
-          "Erreur lors du chargement de l'utilisateur depuis AsyncStorage :",
-          error
-        );
-      } finally {
-        console.log("Chargement terminé");
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      try {
-        // Simulation de chargement des données
-        setTimeout(() => {
-          setEditedProfile({
-            companyName: "Tech Solutions Inc.",
-            companyDescription:
-              "We provide innovative tech solutions for businesses of all sizes.",
-            clientNeeds: "Looking for experienced React Native developers",
-            rating: 4,
-            email: "contact@techsolutions.com",
-            phone: "+1 555-123-4567",
-            location: "Tunis, Tunisia",
-          });
-          setIsLoading(false);
-        }, 1000);
-      } catch (error) {
-        Alert.alert("Error", "Failed to load profile data");
-        setIsLoading(false);
+        console.error("Error fetching user profile:", error);
       }
     };
 
-    fetchProfileData();
+    fetchUserProfile();
   }, []);
 
   const pickImage = async () => {
@@ -114,10 +76,11 @@ const ProfilClient = ({ route }) => {
     setIsLoading(true);
     try {
       console.log("editedProfile ", editedProfile);
-      const res = update_profile(editedProfile);
+      const res = await update_profile(editedProfile);
       console.log("api update profile ", res);
 
-      setProfile(editedProfile);
+      await AsyncStorage.setItem("user", JSON.stringify(res.user));
+      setProfile(res.user);
 
       setModalVisible(false);
       Alert.alert("Success", "Profile updated successfully");
@@ -223,7 +186,7 @@ const ProfilClient = ({ route }) => {
               </TouchableOpacity>
 
               <View style={styles.ratingContainer}>
-                {renderStars(profile.rating)}
+                {renderStars(profile.profile.rating)}
               </View>
             </View>
 
@@ -285,7 +248,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Company Name</Text>
                 <TextInput
                   style={styles.input}
-                  value={editedProfile.companyName}
+                  value={editedProfile.profile.companyName}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, companyName: text })
                   }
@@ -310,7 +273,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Phone</Text>
                 <TextInput
                   style={styles.input}
-                  value={editedProfile.phone}
+                  value={editedProfile.profile.phone}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, phone: text })
                   }
@@ -323,7 +286,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Location</Text>
                 <TextInput
                   style={styles.input}
-                  value={editedProfile.location}
+                  value={editedProfile.profile.location}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, location: text })
                   }
@@ -335,7 +298,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Company Description</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
-                  value={editedProfile.companyDescription}
+                  value={editedProfile.profile.companyDescription}
                   onChangeText={(text) =>
                     setEditedProfile({
                       ...editedProfile,
@@ -352,7 +315,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Client Needs</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
-                  value={editedProfile.clientNeeds}
+                  value={editedProfile.profile.clientNeeds}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, clientNeeds: text })
                   }
@@ -365,7 +328,7 @@ const ProfilClient = ({ route }) => {
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Rating</Text>
                 <View style={styles.ratingContainer}>
-                  {renderStars(editedProfile.rating, true)}
+                  {renderStars(editedProfile.profile.rating, true)}
                 </View>
               </View>
             </ScrollView>

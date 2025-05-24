@@ -68,7 +68,7 @@ export const getProfile = async () => {
 export const update_profile = async (userData) => {
   try {
     const response = await api.put("/profile", userData); // Le token est automatiquement ajouté via l'intercepteur
-    return response;
+    return response.data;
   } catch (error) {
     throw error.response ? error.response.data : error.message;
   }
