@@ -181,7 +181,7 @@ function SidebarNav() {
           {userRole === "freelancer" ? (
   <View style={[styles.roleContent, styles.freelancerTheme]}>
     <Text style={styles.roleTitle}>
-      {user?.name ? `Welcome ${user.name},` : 'Welcome,'} Super Freelancer! 👋
+      {user?.name ? `Welcome back ${user.name},` : 'Welcome,'} Super Freelancer! 👋
     </Text>
     <Text style={styles.motivationText}>
       Your next great opportunity starts here! Find projects that perfectly match your unique skills.
@@ -219,7 +219,7 @@ function SidebarNav() {
 )   : userRole === "client" ? (
   <View style={[styles.roleContent, styles.clientTheme]}>
     <Text style={styles.roleTitle}>
-      {user?.company ? `Welcome ${user.company},` : 'Welcome, Valued Client!'} 👔
+      {user?.name ? `Welcome back ${user.name},` : 'Welcome,'} Valued Client! 👋
     </Text>
     <Text style={styles.motivationText}>
       Find the perfect talent to bring your vision to life!
@@ -229,7 +229,6 @@ function SidebarNav() {
       {[
         '📈 Manage projects & budgets',
         '🔍 Find top-rated freelancers',
-        '🔒 Secure payment system',
         '🚀 Launch projects faster'
       ].map((feature, index) => (
         <Text key={index} style={styles.featureItem}>
@@ -431,7 +430,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     position: "relative",
-    paddingBottom: 70,
+    
   },
   content: {
     flex: 1,
@@ -448,7 +447,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     marginBottom: 5,
-    marginTop: -5,
+    marginTop: -20,
   },
   
   menuButton: {
@@ -462,7 +461,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     width: 150,
-    height: "95.2%",
+    height: "87.5%",
     backgroundColor: "#FFFFFF",
     paddingVertical: 20,
     zIndex: 20,
@@ -540,30 +539,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 10,
   },
-    bottomSidebar: {
-    position: 'absolute',
-    bottom: statusBarHeight + 10,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    paddingVertical: 6,
-    paddingHorizontal: 5,
-    height: 60,
-    zIndex: 100,
-    marginHorizontal: 10,
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
-  
+  bottomSidebar: {
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+  backgroundColor: "#FFF",
+  paddingVertical: 10,
+  position: "absolute",
+  bottom: 0,  // <-- Coller en bas SANS calcul
+  width: "100%",  // Plus fiable que Dimensions.get()
+  height: 60,
+  zIndex: 10,
+  borderTopWidth: 1,
+  borderTopColor: "#E0E0E0",
+  shadowColor: '#E0E0E0',
+  shadowOffset: { width: 0, height: -2 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 3,
 },
+
   bottomNavItem: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -680,7 +675,7 @@ const styles = StyleSheet.create({
   flexDirection: "row",
   justifyContent: "space-around",
   alignItems: "center",
-  backgroundColor: "#F9F9F9",
+  backgroundColor: "#FFF",
   paddingVertical: 12,
   position: "absolute",
   bottom: Platform.select({
@@ -692,7 +687,7 @@ const styles = StyleSheet.create({
   zIndex: 10,
   borderTopWidth: 1,
   borderTopColor: "#E0E0E0",
-  shadowColor: '#000',
+  shadowColor: '#E0E0E0',
   shadowOffset: { width: 0, height: -2 },
   shadowOpacity: 0.05,
   shadowRadius: 2,
@@ -741,9 +736,9 @@ const styles = StyleSheet.create({
     borderLeftColor: '#3B82F6',
   },
   clientTheme: {
-  backgroundColor: '#F3FCF7',
+  backgroundColor: '#F0F9FF',
   borderLeftWidth: 4,
-  borderLeftColor: '#10B981',
+  borderLeftColor: '#3B82F6',
 },
   roleTitle: {
     fontSize: 22,

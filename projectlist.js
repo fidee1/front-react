@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, ScrollView, SafeAreaView, StatusBar, Platform } from 'react-native'; // Added StatusBar, Platform
 import { Badge } from 'react-native-elements';
 import { Ionicons } from '@expo/vector-icons';
 
 const projectlist = ({ navigation }) => {
-  // Sample data
+  // Sample data - Statuses updated
   const [projects, setProjects] = useState([
     {
       id: 1,
       name: 'Website Redesign',
-      status: 'Open',
+      status: 'Available', // Changed from 'Open'
       proposals: [
         {
           freelancerName: 'Sarah Smith',
@@ -28,7 +28,7 @@ const projectlist = ({ navigation }) => {
     {
       id: 2,
       name: 'Mobile App Development',
-      status: 'Closed',
+      status: 'Affected', // Changed from 'Closed'
       proposals: [],
     },
   ]);
@@ -41,13 +41,14 @@ const projectlist = ({ navigation }) => {
     setShowModal(true);
   };
 
+  // getStatusColor updated for new statuses
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Open':
+      case 'Available': // Changed from 'Open'
         return '#28a745'; // success green
       case 'In Progress':
         return '#ffc107'; // warning yellow
-      case 'Closed':
+      case 'Affected': // Changed from 'Closed'
         return '#6c757d'; // secondary gray
       default:
         return '#007bff'; // primary blue
@@ -59,8 +60,8 @@ const projectlist = ({ navigation }) => {
       <View style={styles.projectInfo}>
         <Text style={styles.projectName}>{item.name}</Text>
         <Badge
-          value={item.status}
-          status="success"
+          value={item.status} // Displays the new status text directly
+          status="success" // This prop might not be needed if using custom background
           badgeStyle={{ backgroundColor: getStatusColor(item.status) }}
           textStyle={{ color: 'white' }}
         />
@@ -90,8 +91,8 @@ const projectlist = ({ navigation }) => {
         <TouchableOpacity style={[styles.actionButton, styles.chatButton]}>
           <Text style={styles.buttonText}>Chat</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, styles.declineButton]}>
-          <Text style={styles.buttonText}>Decline</Text>
+        <TouchableOpacity style={[styles.actionButton, styles.refuseButton]}>
+          <Text style={styles.buttonText}>refuse</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -99,18 +100,23 @@ const projectlist = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        {/* Header with back arrow */}
-        <View style={styles.headerContainer}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#0F2573" />
-          </TouchableOpacity>
-          <View style={styles.header}>
-            <Text style={styles.title}>My Posted Projects</Text>
-          </View>
-        </View>
+      <StatusBar barStyle="dark-content" backgroundColor="#F0F8FF" /> 
+      
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        
+        >
+          <Ionicons name="arrow-back" size={24} color="white" />
+        </TouchableOpacity>
+        
+        <Text style={styles.title}>My Posted Projects</Text>
+        
+        <View style={{ width: 24 }} />
+      </View>
 
-        {/* Main content pushed down */}
+      <View style={styles.container}>
         <View style={styles.contentContainer}>
           <FlatList
             data={projects}
@@ -120,7 +126,6 @@ const projectlist = ({ navigation }) => {
           />
         </View>
 
-        {/* Proposals Modal */}
         <Modal
           visible={showModal}
           animationType="slide"
@@ -128,14 +133,15 @@ const projectlist = ({ navigation }) => {
           onRequestClose={() => setShowModal(false)}
         >
           <SafeAreaView style={styles.modalSafeArea}>
+            <StatusBar barStyle="dark-content" backgroundColor="#F8FAFF" />
             <View style={styles.modalContainer}>
               <View style={styles.modalHeader}>
-                <TouchableOpacity onPress={() => setShowModal(false)} style={styles.modalBackButton}>
+                <TouchableOpacity 
+                onPress={() => setShowModal(false)} style={styles.modalBackButton}>
                   <Ionicons name="arrow-back" size={24} color="#0F2573" />
                 </TouchableOpacity>
-                <Text style={styles.modalTitle}>Proposals for {selectedProject?.name}</Text>
+                <Text style={styles.modalTitle}>Proposals for {selectedProject?.titre}</Text>
               </View>
-
               <ScrollView style={styles.modalContent}>
                 {selectedProject?.proposals?.length ? (
                   <FlatList
@@ -158,36 +164,43 @@ const projectlist = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: '#F0F8FF',
+  },
+  header: {
     backgroundColor: '#0F2573',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 5,
+    height: 80,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  backButton: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    color: 'white',
+    fontSize: 20,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+    marginLeft: -24,
   },
   container: {
     flex: 1,
+    backgroundColor: "#F0F8FF",
     paddingHorizontal: 16,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 20,
-  },
-  backButton: {
-    marginRight: 10,
-    padding: 8,
-  },
-  header: {
-   // backgroundColor: '#E1F0FF',
-    padding: 16,
-    borderRadius: 10,
-    flex: 1,
-  },
-  title: {
-    color: '#0F2573',
-    fontWeight: '600',
-    fontSize: 20,
   },
   contentContainer: {
     flex: 1,
-    marginTop: 20, // Pushes content down further
+    marginTop: 20,
   },
   listContainer: {
     paddingBottom: 20,
@@ -294,13 +307,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   acceptButton: {
-    backgroundColor: '#28a745',
+    backgroundColor: '#0F2573',
   },
   chatButton: {
-    backgroundColor: '#17a2b8',
+    backgroundColor: '#0F2573',
   },
-  declineButton: {
-    backgroundColor: '#dc3545',
+  refuseButton: {
+    backgroundColor: '#0F2573',
   },
   noProposalsText: {
     textAlign: 'center',

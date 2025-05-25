@@ -170,7 +170,7 @@ const Freelancers = () => {
 
             <TextInput
               style={styles.input}
-              placeholder="Rechercher par compétences (React, PHP, etc.)"
+              placeholder="Search by skills (React, PHP, etc.)" // Translated
               value={skillFilter}
               onChangeText={setSkillFilter}
             />
@@ -178,7 +178,7 @@ const Freelancers = () => {
             <View style={styles.rateFilterContainer}>
               <TextInput
                 style={[styles.input, styles.rateInput]}
-                placeholder="Tarif min (TND)"
+                placeholder="Min rate (TND)" // Translated
                 value={minRate}
                 onChangeText={setMinRate}
                 keyboardType="numeric"
@@ -186,7 +186,7 @@ const Freelancers = () => {
 
               <TextInput
                 style={[styles.input, styles.rateInput]}
-                placeholder="Tarif max (TND)"
+                placeholder="Max rate (TND)" // Translated
                 value={maxRate}
                 onChangeText={setMaxRate}
                 keyboardType="numeric"
@@ -198,14 +198,14 @@ const Freelancers = () => {
                 style={[styles.button, styles.applyButton]}
                 onPress={applyFilters}
               >
-                <Text style={styles.buttonText}>Appliquer filtres</Text>
+                <Text style={styles.buttonText}>Apply Filters</Text> // Translated
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.button, styles.clearButton]}
                 onPress={clearFilters}
               >
-                <Text style={styles.buttonText}>Réinitialiser</Text>
+                <Text style={styles.buttonText}>Reset</Text> // Translated
               </TouchableOpacity>
             </View>
           </View>
@@ -249,18 +249,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F8FF",
   },
   header: {
-    backgroundColor: "#0F2573",
-    padding: 15,
-    flexDirection: "row",
-    alignItems: "center",
+    backgroundColor: '#0F2573',
+    flexDirection: 'row',
+    alignItems: 'center', // Vertically center items
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 5, // Added padding to shift content down slightly
+    height: 80, // User specified height
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   backButton: {
-    marginRight: 10,
+    marginRight: -100,
   },
   headerText: {
-    color: "white",
+   color: 'white',
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+    marginLeft: -24,
   },
   contentContainer: {
     flex: 1,

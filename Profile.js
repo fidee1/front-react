@@ -165,7 +165,7 @@ const Profile = () => {
                 {renderStars(editedProfile.note)}
               </View>
               <Badge style={styles.rateBadge}>
-                💰 {editedProfile.note} TND/h
+                💰 {editedProfile.tarif} TND/h
               </Badge>
             </View>
 
@@ -221,6 +221,14 @@ const Profile = () => {
               />
 
               <Text style={styles.label}>Hourly Rate (TND)</Text>
+               <TextInput
+                style={styles.input}
+                value={editedProfile.profile?.tarif}
+                onChangeText={(text) =>
+                  setEditedProfile({ ...editedProfile, titre: text })
+                }
+                placeholder="Hourly Rate"
+              />
 
               <Text style={styles.label}>Skills (comma separated)</Text>
               <TextInput
