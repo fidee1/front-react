@@ -17,3 +17,12 @@ export const get_projects_client = async () => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
+export const get_available_projects = async () => {
+  try {
+    const response = await apiClient.get("/available-projects");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};

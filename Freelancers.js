@@ -34,7 +34,7 @@ const Freelancers = () => {
         setError(null);
 
         const res = await get_freelancers();
-        console.log('res', res)
+        console.log("res", res);
         setFreelancers(res);
         setFilteredFreelancers(res);
         setLoading(false);
@@ -198,7 +198,8 @@ const Freelancers = () => {
                 style={[styles.button, styles.applyButton]}
                 onPress={applyFilters}
               >
-                <Text style={styles.buttonText}>Apply Filters</Text> // Translated
+                <Text style={styles.buttonText}>Apply Filters</Text> //
+                Translated
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -249,14 +250,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0F8FF",
   },
   header: {
-    backgroundColor: '#0F2573',
-    flexDirection: 'row',
-    alignItems: 'center', // Vertically center items
-    justifyContent: 'space-between',
+    backgroundColor: "#0F2573",
+    flexDirection: "row",
+    alignItems: "center", // Vertically center items
+    justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingTop: 5, // Added padding to shift content down slightly
     height: 80, // User specified height
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -266,11 +267,11 @@ const styles = StyleSheet.create({
     marginRight: -100,
   },
   headerText: {
-   color: 'white',
+    color: "white",
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     flex: 1,
-    textAlign: 'center',
+    textAlign: "center",
     marginLeft: -24,
   },
   contentContainer: {

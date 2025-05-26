@@ -186,19 +186,19 @@ const ProfilClient = ({ route }) => {
               </TouchableOpacity>
 
               <View style={styles.ratingContainer}>
-                {renderStars(profile.profile.rating)}
+                {renderStars(profile.profile?.rating)}
               </View>
             </View>
 
-            {renderField("Company Name", profile.profile.companyName)}
+            {renderField("Company Name", profile.profile?.companyName)}
             {renderField("Email", profile.email)}
-            {renderField("Phone", profile.profile.phone)}
-            {renderField("Location", profile.profile.location)}
+            {renderField("Phone", profile.profile?.phone)}
+            {renderField("Location", profile.profile?.location)}
             {renderField(
               "Company Description",
-              profile.profile.companyDescription
+              profile.profile?.companyDescription
             )}
-            {renderField("Client Needs", profile.profile.clientNeeds, true)}
+            {renderField("Client Needs", profile.profile?.clientNeeds, true)}
 
             {!isExternalView && (
               <Button
@@ -248,7 +248,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Company Name</Text>
                 <TextInput
                   style={styles.input}
-                  value={editedProfile.profile.companyName}
+                  value={editedProfile.profile?.companyName}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, companyName: text })
                   }
@@ -273,7 +273,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Phone</Text>
                 <TextInput
                   style={styles.input}
-                  value={editedProfile.profile.phone}
+                  value={editedProfile.profile?.phone}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, phone: text })
                   }
@@ -286,7 +286,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Location</Text>
                 <TextInput
                   style={styles.input}
-                  value={editedProfile.profile.location}
+                  value={editedProfile.profile?.location}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, location: text })
                   }
@@ -298,7 +298,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Company Description</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
-                  value={editedProfile.profile.companyDescription}
+                  value={editedProfile.profile?.companyDescription}
                   onChangeText={(text) =>
                     setEditedProfile({
                       ...editedProfile,
@@ -315,7 +315,7 @@ const ProfilClient = ({ route }) => {
                 <Text style={styles.label}>Client Needs</Text>
                 <TextInput
                   style={[styles.input, styles.textArea]}
-                  value={editedProfile.profile.clientNeeds}
+                  value={editedProfile.profile?.clientNeeds}
                   onChangeText={(text) =>
                     setEditedProfile({ ...editedProfile, clientNeeds: text })
                   }
@@ -328,7 +328,7 @@ const ProfilClient = ({ route }) => {
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Rating</Text>
                 <View style={styles.ratingContainer}>
-                  {renderStars(editedProfile.profile.rating, true)}
+                  {renderStars(editedProfile.profile?.rating, true)}
                 </View>
               </View>
             </ScrollView>

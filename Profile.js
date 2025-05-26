@@ -31,7 +31,13 @@ const Profile = () => {
 
   const [profile, setProfile] = useState(user);
 
-  const [editedProfile, setEditedProfile] = useState({ ...profile });
+  const [editedProfile, setEditedProfile] = useState({
+    titre: user.titre || "",
+    tarif: user.profile.yarif || "",
+    note: user.note || 0,
+    experience: user.experience || "",
+    portfolio: user.portfolio || "",
+  });
   const [skillsInput, setSkillsInput] = React.useState("");
 
   useEffect(() => {
@@ -39,10 +45,17 @@ const Profile = () => {
       try {
         const storedUser = await AsyncStorage.getItem("user");
         if (storedUser) {
-          // Simulate delay
+          const parsedUser = JSON.parse(storedUser);
           setTimeout(() => {
-            setProfile(JSON.parse(storedUser));
-            console.log("profile ", JSON.parse(storedUser));
+            setProfile(parsedUser);
+            setEditedProfile({
+              titre: parsedUser.profile.titre || "",
+              tarif: parsedUser.profile.tarif || "",
+              note: parsedUser.profile.note || 0,
+              experience: parsedUser.profile.experience || "",
+              portfolio: parsedUser.profile.portfolio || "",
+            });
+            setSkillsInput(parsedUser.profile?.competences || "");
           }, 1000);
         }
       } catch (error) {
@@ -91,8 +104,9 @@ const Profile = () => {
       console.log("api update profile ", res);
 
       //  dispatch(setUser(res.user));
-      await AsyncStorage.setItem("user", JSON.stringify(res));
+      await AsyncStorage.setItem("user", JSON.stringify(res.user));
       setProfile(res.user);
+      console.log("profile ", profile);
 
       setModalVisible(false);
       Alert.alert("Success", "Profile updated successfully");
@@ -116,8 +130,8 @@ const Profile = () => {
   };
 
   const skillsList = skillsInput
-    .split(",")
-    .filter((skill) => skill.trim() !== "");
+    ? skillsInput.split(",").filter((skill) => skill.trim() !== "")
+    : [];
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -160,7 +174,7 @@ const Profile = () => {
               <Text style={styles.name}>
                 {user.name} {user.lastName}
               </Text>
-              <Text style={styles.profession}>{user.profile?.titre}</Text>
+              <Text style={styles.profession}>{editedProfile.titre}</Text>
               <View style={styles.rating}>
                 {renderStars(editedProfile.note)}
               </View>
@@ -183,7 +197,7 @@ const Profile = () => {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>💼 Experience</Text>
               <Text style={styles.sectionContent}>
-                {editedProfile.profile?.experience || "No experience added"}
+                {editedProfile.experience || "No experience added"}
               </Text>
             </View>
 
@@ -213,7 +227,7 @@ const Profile = () => {
               <Text style={styles.label}>Profession</Text>
               <TextInput
                 style={styles.input}
-                value={editedProfile.profile?.titre}
+                value={editedProfile.titre}
                 onChangeText={(text) =>
                   setEditedProfile({ ...editedProfile, titre: text })
                 }
@@ -221,11 +235,11 @@ const Profile = () => {
               />
 
               <Text style={styles.label}>Hourly Rate (TND)</Text>
-               <TextInput
+              <TextInput
                 style={styles.input}
-                value={editedProfile.profile?.tarif}
+                value={editedProfile.tarif}
                 onChangeText={(text) =>
-                  setEditedProfile({ ...editedProfile, titre: text })
+                  setEditedProfile({ ...editedProfile, tarif: text })
                 }
                 placeholder="Hourly Rate"
               />
@@ -242,7 +256,7 @@ const Profile = () => {
               <Text style={styles.label}>Experience</Text>
               <TextInput
                 style={[styles.input, { height: 100 }]}
-                value={editedProfile.profile?.experience}
+                value={editedProfile.experience}
                 onChangeText={(text) =>
                   setEditedProfile({ ...editedProfile, experience: text })
                 }
@@ -253,7 +267,7 @@ const Profile = () => {
               <Text style={styles.label}>Portfolio URL</Text>
               <TextInput
                 style={styles.input}
-                value={editedProfile.profile?.portfolio}
+                value={editedProfile.portfolio}
                 onChangeText={(text) =>
                   setEditedProfile({ ...editedProfile, portfolio: text })
                 }

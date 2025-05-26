@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
-  StatusBar // Import StatusBar
+  StatusBar, // Import StatusBar
   // SafeAreaView n'est plus utilisé comme conteneur principal ici
-} from 'react-native';
+} from "react-native";
 // Import Ionicons
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
+import { get_available_projects } from "./services/project";
+import { useSelector } from "react-redux";
 // Assurez-vous que @expo/vector-icons est installé: expo install @expo/vector-icons
 
 // Pour le sélecteur de date, vous pourriez utiliser @react-native-community/datetimepicker
@@ -21,37 +23,36 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Le composant reçoit maintenant la prop 'navigation' de React Navigation
 const ListOfOffers = ({ navigation }) => {
-  const [maxBudget, setMaxBudget] = useState('');
+  const userConnected = useSelector((state) => state.auth?.user) || {};
+
+  const [maxBudget, setMaxBudget] = useState("");
   const [deadline, setDeadline] = useState(null); // Ou new Date()
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('Oldest First');
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [sortBy, setSortBy] = useState("Oldest First");
+  const [projects, setProjects] = useState([]);
 
-  // Données factices pour la liste des projets
-  const projects = [
-    {
-      id: 1,
-      titre: 'application éducatif',
-      Skills: 'laravel,flutter',
-      budget: '700 TND',
-      deadline: '1 janv. 1970',
-      status: 'Apply',
-    },
-    {
-      id: 2,
-      titre: 'Développement d\'une application mobile',
-      Skills: 'symphony,react native',
-      budget: '2000 TND',
-      deadline: '4 mai 2025',
-      status: 'Already Applied',
-    },
-    // Ajoutez d'autres projets ici si nécessaire
-  ];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await get_available_projects();
+        setProjects(res);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        Alert.alert("Error", "Failed to fetch projects.");
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   const handleDateChange = (event, selectedDate) => {
     const currentDate = selectedDate || deadline;
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(Platform.OS === "ios");
     setDeadline(currentDate);
+  };
+  const handleApplyProject = (id) => {
+    console.log("Apply for project:", id);
   };
 
   const renderProjectCard = (project) => (
@@ -59,7 +60,15 @@ const ListOfOffers = ({ navigation }) => {
       <Text style={styles.cardTitle}>{project.titre}</Text>
       <View style={styles.cardRow}>
         <Text style={styles.cardLabel}>Skills:</Text>
-        <Text style={styles.cardValueChip}>{project.Skills}</Text>
+        <Text style={styles.cardValueChip}>
+          {Array.isArray(project.skills)
+            ? project.skills.join(", ")
+            : typeof project.skills === "string"
+            ? project.skills.startsWith("[")
+              ? JSON.parse(project.skills).join(", ")
+              : project.skills
+            : project.skills}
+        </Text>{" "}
       </View>
       <View style={styles.cardRow}>
         <Text style={styles.cardLabel}>Budget:</Text>
@@ -67,18 +76,25 @@ const ListOfOffers = ({ navigation }) => {
       </View>
       <View style={styles.cardRow}>
         <Text style={styles.cardLabel}>Deadline:</Text>
-        <Text style={styles.cardValue}>{project.deadline}</Text>
+        <Text style={styles.cardValue}>{project.date_limite}</Text>
       </View>
       <TouchableOpacity
         style={[
           styles.actionButton,
-          project.status === 'Already Applied'
+          userConnected.applications.some((app) => app.id == project.id)
             ? styles.appliedButton
             : styles.applyButton,
         ]}
-        disabled={project.status === 'Already Applied'}
+        disabled={userConnected.applications.some(
+          (app) => app.id == project.id
+        )}
+        onPress={() => handleApplyProject(project.id)}
       >
-        <Text style={styles.actionButtonText}>{project.status}</Text>
+        <Text style={styles.actionButtonText}>
+          {userConnected.applications.some((app) => app.id == project.id)
+            ? "Already Applied"
+            : "Apply"}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -88,7 +104,7 @@ const ListOfOffers = ({ navigation }) => {
     <View style={styles.screenContainer}>
       {/* Configuration de la barre de statut pour être au-dessus */}
       <StatusBar
-        barStyle={Platform.OS === 'ios' ? 'dark-content' : 'light-content'} // Icônes sombres sur iOS (fond clair), claires sur Android (fond bleu)
+        barStyle={Platform.OS === "ios" ? "dark-content" : "light-content"} // Icônes sombres sur iOS (fond clair), claires sur Android (fond bleu)
         backgroundColor="#0F2573" // Garde le fond bleu pour Android pour la continuité visuelle demandée initialement
         // translucent={false} // Assure que l'entête ne va pas derrière
       />
@@ -121,7 +137,7 @@ const ListOfOffers = ({ navigation }) => {
             style={styles.input}
           >
             <Text style={deadline ? styles.dateText : styles.placeholderText}>
-              {deadline ? deadline.toLocaleDateString('fr-FR') : 'jj/mm/aaaa'}
+              {deadline ? deadline.toLocaleDateString("fr-FR") : "jj/mm/aaaa"}
             </Text>
           </TouchableOpacity>
 
@@ -135,14 +151,14 @@ const ListOfOffers = ({ navigation }) => {
             <TouchableOpacity
               style={[
                 styles.sortButton,
-                sortBy === 'Oldest First' && styles.sortButtonActive,
+                sortBy === "Oldest First" && styles.sortButtonActive,
               ]}
-              onPress={() => setSortBy('Oldest First')}
+              onPress={() => setSortBy("Oldest First")}
             >
               <Text
                 style={[
                   styles.sortButtonText,
-                  sortBy === 'Oldest First' && styles.sortButtonTextActive,
+                  sortBy === "Oldest First" && styles.sortButtonTextActive,
                 ]}
               >
                 Oldest First
@@ -151,14 +167,14 @@ const ListOfOffers = ({ navigation }) => {
             <TouchableOpacity
               style={[
                 styles.sortButton,
-                sortBy === 'Newest First' && styles.sortButtonActive,
+                sortBy === "Newest First" && styles.sortButtonActive,
               ]}
-              onPress={() => setSortBy('Newest First')}
+              onPress={() => setSortBy("Newest First")}
             >
               <Text
                 style={[
                   styles.sortButtonText,
-                  sortBy === 'Newest First' && styles.sortButtonTextActive,
+                  sortBy === "Newest First" && styles.sortButtonTextActive,
                 ]}
               >
                 Newest First
@@ -178,21 +194,23 @@ const ListOfOffers = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  screenContainer: { // Conteneur principal standard View
+  screenContainer: {
+    // Conteneur principal standard View
     flex: 1,
-    backgroundColor: '#f0f2f5', // Fond général de l'écran (pour le contenu scrollable)
+    backgroundColor: "#f0f2f5", // Fond général de l'écran (pour le contenu scrollable)
     // Le paddingTop pour Android est géré par la StatusBar non-translucide
     // ou pourrait être ajouté ici si StatusBar est translucide.
   },
   // safeArea n'est plus utilisé
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#0F2573',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#0F2573",
     paddingVertical: 12,
     paddingHorizontal: 15,
-    height:70,
-    paddingTop: Platform.OS === 'ios' ? (StatusBar.currentHeight || 0) + 12 : 12,
+    height: 70,
+    paddingTop:
+      Platform.OS === "ios" ? (StatusBar.currentHeight || 0) + 12 : 12,
   },
   backButton: {
     marginRight: 15,
@@ -200,10 +218,10 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#ffffff',
+    fontWeight: "bold",
+    color: "#ffffff",
     flex: 1,
-    textAlign: 'left',
+    textAlign: "left",
   },
   contentContainer: {
     // Le fond est déjà défini dans screenContainer, mais on peut le spécifier ici si besoin
@@ -211,12 +229,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
   },
   filtersContainer: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 8,
     padding: 15,
     marginTop: 20,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -224,77 +242,77 @@ const styles = StyleSheet.create({
   },
   filterLabel: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginBottom: 5,
     marginTop: 10,
   },
   input: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     borderWidth: 1,
-    borderColor: '#ced4da',
+    borderColor: "#ced4da",
     borderRadius: 4,
     paddingVertical: 10,
     paddingHorizontal: 12,
     fontSize: 14,
     marginBottom: 10,
-    justifyContent: 'center',
+    justifyContent: "center",
     minHeight: 40,
   },
   placeholderText: {
-    color: '#adb5bd',
+    color: "#adb5bd",
   },
   dateText: {
-    color: '#000',
+    color: "#000",
   },
   pickerContainer: {
     borderWidth: 1,
-    borderColor: '#ced4da',
+    borderColor: "#ced4da",
     borderRadius: 4,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     marginBottom: 10,
     minHeight: 40,
-    justifyContent: 'center',
+    justifyContent: "center",
     paddingHorizontal: 12,
   },
   pickerText: {
     fontSize: 14,
-    color: '#000',
+    color: "#000",
   },
   sortButtonsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 5,
   },
   sortButton: {
     flex: 1,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: '#007bff',
+    borderColor: "#007bff",
     borderRadius: 4,
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: 2,
   },
   sortButtonActive: {
-    backgroundColor: '#003366',
-    borderColor: '#003366',
+    backgroundColor: "#003366",
+    borderColor: "#003366",
   },
   sortButtonText: {
-    color: '#007bff',
+    color: "#007bff",
     fontSize: 14,
   },
   sortButtonTextActive: {
-    color: '#ffffff',
-    fontWeight: 'bold',
+    color: "#ffffff",
+    fontWeight: "bold",
   },
   listContainer: {
     marginBottom: 20,
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
@@ -302,67 +320,66 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
     marginBottom: 10,
   },
   cardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   cardLabel: {
     fontSize: 14,
-    color: '#555',
+    color: "#555",
     marginRight: 5,
     minWidth: 70,
   },
   cardValue: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     flexShrink: 1,
   },
   cardValueChip: {
     fontSize: 12,
-    color: '#007bff',
-    backgroundColor: '#e7f3ff',
+    color: "#007bff",
+    backgroundColor: "#e7f3ff",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
-    overflow: 'hidden',
-    alignSelf: 'flex-start',
+    overflow: "hidden",
+    alignSelf: "flex-start",
   },
   actionButton: {
     marginTop: 10,
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 4,
-    alignItems: 'center',
-    alignSelf: 'flex-end',
+    alignItems: "center",
+    alignSelf: "flex-end",
   },
   applyButton: {
-    backgroundColor: '#e7f3ff',
-    borderColor: '#007bff',
+    backgroundColor: "#e7f3ff",
+    borderColor: "#007bff",
     borderWidth: 1,
   },
   appliedButton: {
-    backgroundColor: '#d4edda',
-    borderColor: '#c3e6cb',
+    backgroundColor: "#d4edda",
+    borderColor: "#c3e6cb",
     borderWidth: 1,
   },
   actionButtonText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#003366',
+    fontWeight: "500",
+    color: "#003366",
   },
   footer: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 12,
-    color: '#666',
+    color: "#666",
     marginTop: 10,
     marginBottom: 20,
   },
 });
 
 export default ListOfOffers;
-
