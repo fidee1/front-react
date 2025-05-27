@@ -140,7 +140,7 @@ const projectlist = ({ navigation }) => {
                 onPress={() => setShowModal(false)} style={styles.modalBackButton}>
                   <Ionicons name="arrow-back" size={24} color="#0F2573" />
                 </TouchableOpacity>
-                <Text style={styles.modalTitle}>Proposals for {selectedProject?.titre}</Text>
+                <Text style={styles.modalTitle}>Proposals for {projects?.titre}</Text>
               </View>
               <ScrollView style={styles.modalContent}>
                 {selectedProject?.proposals?.length ? (

@@ -6,31 +6,26 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Modal,
   Platform,
-  StatusBar, // Import StatusBar
-  // SafeAreaView n'est plus utilisé comme conteneur principal ici
+  StatusBar,
 } from "react-native";
-// Import Ionicons
 import { Ionicons } from "@expo/vector-icons";
 import { get_available_projects } from "./services/project";
 import { useSelector } from "react-redux";
-// Assurez-vous que @expo/vector-icons est installé: expo install @expo/vector-icons
 
-// Pour le sélecteur de date, vous pourriez utiliser @react-native-community/datetimepicker
-// import DateTimePicker from '@react-native-community/datetimepicker';
-// Pour le sélecteur de catégorie, vous pourriez utiliser @react-native-picker/picker
-// import { Picker } from '@react-native-picker/picker';
-
-// Le composant reçoit maintenant la prop 'navigation' de React Navigation
 const ListOfOffers = ({ navigation }) => {
   const userConnected = useSelector((state) => state.auth?.user) || {};
 
   const [maxBudget, setMaxBudget] = useState("");
-  const [deadline, setDeadline] = useState(null); // Ou new Date()
+  const [deadline, setDeadline] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [sortBy, setSortBy] = useState("Oldest First");
   const [projects, setProjects] = useState([]);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [motivation, setMotivation] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -46,13 +41,15 @@ const ListOfOffers = ({ navigation }) => {
     fetchProjects();
   }, []);
 
-  const handleDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || deadline;
-    setShowDatePicker(Platform.OS === "ios");
-    setDeadline(currentDate);
-  };
   const handleApplyProject = (id) => {
-    console.log("Apply for project:", id);
+    setSelectedProjectId(id);
+    setModalVisible(true);
+  };
+
+  const handleSendMotivation = () => {
+    console.log("Motivation for project", selectedProjectId, ":", motivation);
+    setModalVisible(false);
+    setMotivation("");
   };
 
   const renderProjectCard = (project) => (
@@ -60,7 +57,7 @@ const ListOfOffers = ({ navigation }) => {
       <Text style={styles.cardTitle}>{project.titre}</Text>
       <View style={styles.cardRow}>
         <Text style={styles.cardLabel}>Skills:</Text>
-        <Text style={styles.cardValueChip}>
+        <Text style={styles.cardValue}>
           {Array.isArray(project.skills)
             ? project.skills.join(", ")
             : typeof project.skills === "string"
@@ -68,7 +65,7 @@ const ListOfOffers = ({ navigation }) => {
               ? JSON.parse(project.skills).join(", ")
               : project.skills
             : project.skills}
-        </Text>{" "}
+        </Text>
       </View>
       <View style={styles.cardRow}>
         <Text style={styles.cardLabel}>Budget:</Text>
@@ -100,15 +97,11 @@ const ListOfOffers = ({ navigation }) => {
   );
 
   return (
-    // Utilisation d'une View standard comme conteneur principal
     <View style={styles.screenContainer}>
-      {/* Configuration de la barre de statut pour être au-dessus */}
       <StatusBar
-        barStyle={Platform.OS === "ios" ? "dark-content" : "light-content"} // Icônes sombres sur iOS (fond clair), claires sur Android (fond bleu)
-        backgroundColor="#0F2573" // Garde le fond bleu pour Android pour la continuité visuelle demandée initialement
-        // translucent={false} // Assure que l'entête ne va pas derrière
+        barStyle={Platform.OS === "ios" ? "dark-content" : "light-content"}
+        backgroundColor="#0F2573"
       />
-      {/* En-tête avec bouton icône */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -119,7 +112,6 @@ const ListOfOffers = ({ navigation }) => {
         <Text style={styles.headerTitle}>Available Projects</Text>
       </View>
 
-      {/* Contenu scrollable */}
       <ScrollView style={styles.contentContainer}>
         <View style={styles.filtersContainer}>
           <Text style={styles.filterLabel}>Budget (TD)</Text>
@@ -142,23 +134,25 @@ const ListOfOffers = ({ navigation }) => {
           </TouchableOpacity>
 
           <Text style={styles.filterLabel}>Skills</Text>
-          <View style={styles.pickerContainer}>
-            <Text style={styles.pickerText}>{selectedCategory}</Text>
-          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter required skills"
+            value={selectedCategory}
+            onChangeText={setSelectedCategory}
+          />
 
-          <Text style={styles.filterLabel}>Sort by Deadline</Text>
           <View style={styles.sortButtonsContainer}>
             <TouchableOpacity
               style={[
                 styles.sortButton,
-                sortBy === "Oldest First" && styles.sortButtonActive,
+                sortBy === "Oldest First" && styles.activeSortButton,
               ]}
               onPress={() => setSortBy("Oldest First")}
             >
               <Text
                 style={[
                   styles.sortButtonText,
-                  sortBy === "Oldest First" && styles.sortButtonTextActive,
+                  sortBy === "Oldest First" && styles.activeSortButtonText,
                 ]}
               >
                 Oldest First
@@ -167,14 +161,14 @@ const ListOfOffers = ({ navigation }) => {
             <TouchableOpacity
               style={[
                 styles.sortButton,
-                sortBy === "Newest First" && styles.sortButtonActive,
+                sortBy === "Newest First" && styles.activeSortButton,
               ]}
               onPress={() => setSortBy("Newest First")}
             >
               <Text
                 style={[
                   styles.sortButtonText,
-                  sortBy === "Newest First" && styles.sortButtonTextActive,
+                  sortBy === "Newest First" && styles.activeSortButtonText,
                 ]}
               >
                 Newest First
@@ -183,25 +177,52 @@ const ListOfOffers = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.listContainer}>
-          {projects.map(renderProjectCard)}
-        </View>
-
+        <View style={styles.listContainer}>{projects.map(renderProjectCard)}</View>
         <Text style={styles.footer}>© 2025</Text>
       </ScrollView>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Motivation</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Why are you applying for this project?"
+              value={motivation}
+              onChangeText={setMotivation}
+              multiline
+            />
+            <View style={styles.modalButtonsContainer}>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Close</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSend]}
+                onPress={handleSendMotivation}
+              >
+                <Text style={styles.modalButtonText}>Send</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   screenContainer: {
-    // Conteneur principal standard View
     flex: 1,
-    backgroundColor: "#f0f2f5", // Fond général de l'écran (pour le contenu scrollable)
-    // Le paddingTop pour Android est géré par la StatusBar non-translucide
-    // ou pourrait être ajouté ici si StatusBar est translucide.
+    backgroundColor: "#f0f2f5",
   },
-  // safeArea n'est plus utilisé
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -209,8 +230,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 15,
     height: 70,
-    paddingTop:
-      Platform.OS === "ios" ? (StatusBar.currentHeight || 0) + 12 : 12,
   },
   backButton: {
     marginRight: 15,
@@ -220,12 +239,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#ffffff",
-    flex: 1,
-    textAlign: "left",
   },
   contentContainer: {
-    // Le fond est déjà défini dans screenContainer, mais on peut le spécifier ici si besoin
-    // backgroundColor: '#f0f2f5',
     paddingHorizontal: 15,
   },
   filtersContainer: {
@@ -234,18 +249,11 @@ const styles = StyleSheet.create({
     padding: 15,
     marginTop: 20,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
   },
   filterLabel: {
     fontSize: 14,
     fontWeight: "600",
     color: "#333",
-    marginBottom: 5,
-    marginTop: 10,
   },
   input: {
     backgroundColor: "#f8f9fa",
@@ -255,54 +263,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     fontSize: 14,
-    marginBottom: 10,
-    justifyContent: "center",
-    minHeight: 40,
-  },
-  placeholderText: {
-    color: "#adb5bd",
-  },
-  dateText: {
-    color: "#000",
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#ced4da",
-    borderRadius: 4,
-    backgroundColor: "#f8f9fa",
-    marginBottom: 10,
-    minHeight: 40,
-    justifyContent: "center",
-    paddingHorizontal: 12,
-  },
-  pickerText: {
-    fontSize: 14,
-    color: "#000",
-  },
-  sortButtonsContainer: {
-    flexDirection: "row",
-    marginTop: 5,
-  },
-  sortButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: "#007bff",
-    borderRadius: 4,
-    alignItems: "center",
-    marginHorizontal: 2,
-  },
-  sortButtonActive: {
-    backgroundColor: "#003366",
-    borderColor: "#003366",
-  },
-  sortButtonText: {
-    color: "#007bff",
-    fontSize: 14,
-  },
-  sortButtonTextActive: {
-    color: "#ffffff",
-    fontWeight: "bold",
   },
   listContainer: {
     marginBottom: 20,
@@ -312,33 +272,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 15,
     marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 10,
   },
   cardRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
   },
   cardLabel: {
     fontSize: 14,
     color: "#555",
     marginRight: 5,
-    minWidth: 70,
   },
   cardValue: {
     fontSize: 14,
     color: "#333",
-    flexShrink: 1,
   },
   cardValueChip: {
     fontSize: 12,
@@ -347,8 +298,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
-    overflow: "hidden",
-    alignSelf: "flex-start",
   },
   actionButton: {
     marginTop: 10,
@@ -356,22 +305,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 4,
     alignItems: "center",
-    alignSelf: "flex-end",
   },
   applyButton: {
     backgroundColor: "#e7f3ff",
-    borderColor: "#007bff",
-    borderWidth: 1,
   },
   appliedButton: {
     backgroundColor: "#d4edda",
-    borderColor: "#c3e6cb",
-    borderWidth: 1,
   },
   actionButtonText: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#003366",
   },
   footer: {
     textAlign: "center",
@@ -380,6 +323,86 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContainer: {
+    width: "80%",
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: "#ced4da",
+    borderRadius: 4,
+    padding: 10,
+    height: 80,
+    marginBottom: 15,
+    textAlignVertical: "top",
+  },
+  modalButtonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 4,
+    backgroundColor: "#e7f3ff",
+  },
+  modalButtonSend: {
+    backgroundColor: "#007bff",
+  },
+  modalButtonText: {
+    color: "#003366",
+    fontWeight: "bold",
+  },
+  sortButtonsContainer: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginVertical: 10,
+  paddingVertical: 10,
+  backgroundColor: "#ffffff",
+  borderRadius: 8,
+  paddingHorizontal: 15,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 2, // Pour Android
+},
+sortButton: {
+  flex: 1,
+  paddingVertical: 10,
+  paddingHorizontal: 10,
+  borderWidth: 1,
+  borderColor: "#ced4da",
+  borderRadius: 5,
+  alignItems: "center",
+  marginHorizontal: 5,
+  backgroundColor: "#f8f9fa",
+},
+activeSortButton: {
+  backgroundColor: "#007bff",
+  borderColor: "#0056b3",
+},
+sortButtonText: {
+  fontSize: 14,
+  color: "#333",
+},
+activeSortButtonText: {
+  color: "#ffffff",
+  fontWeight: "600",
+},
 });
 
 export default ListOfOffers;

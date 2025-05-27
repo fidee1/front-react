@@ -194,10 +194,7 @@ const ProfilClient = ({ route }) => {
             {renderField("Email", profile.email)}
             {renderField("Phone", profile.profile?.phone)}
             {renderField("Location", profile.profile?.location)}
-            {renderField(
-              "Company Description",
-              profile.profile?.companyDescription
-            )}
+            {renderField("Company Description",profile.profile?.companyDescription)}
             {renderField("Client Needs", profile.profile?.clientNeeds, true)}
 
             {!isExternalView && (

@@ -1,180 +1,351 @@
-import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  FlatList, 
-  ActivityIndicator,
-  RefreshControl,
-  SafeAreaView, 
-  Platform,
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
   StatusBar,
-  TouchableOpacity
+  Modal,
+  TextInput,
+  Button,
 } from "react-native";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import api from "./api";
 
 const Invoices = () => {
+  const userRole = useSelector((state) => state.auth.role);
+  const user = useSelector((state) => state.auth.user);
+  const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  
-  // Récupération sécurisée des données d'authentification
-  const { role, user, token } = useSelector(state => ({
-    role: state.auth.role,
-    user: state.auth.user || {},
-    token: state.auth.token
-  }));
 
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [data, setData] = useState([
+    {
+      id: 1,
+      project: "Développement d'un chatbot pour service client",
+      client: "boubaker eya",
+      freelancer: "loussafl Asma",
+      amount: "1500 TD",
+      status: "Paid",
+      deadline: "17 mai 2025",
+    },
+    {
+      id: 2,
+      project: "Site vitrine entreprise",
+      client: "boubaker eya",
+      freelancer: "boubaker eye",
+      amount: "900 TD",
+      status: "Unpaid",
+      deadline: "1 avr. 2025",
+    },
+  ]);
 
-  const fetchInvoices = async () => {
-    try {
-      if (!token || !user?.id) return;
-      
-      const endpoint = role === "freelancer" 
-        ? `/freelancers/${user.id}/invoices`
-        : `/clients/${user.id}/invoices`;
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [formData, setFormData] = useState({
+    project: "",
+    amount: "",
+    description: "",
+    deadline: "",
+    clientName: "",
+  });
 
-      const response = await api.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  const isClient = userRole === "client";
 
-      setInvoices(response.data);
-    } catch (error) {
-      console.error("Fetch invoices error:", error);
-      Alert.alert("Error", "Failed to load invoices");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+  const renderStatus = (status) => {
+    let statusStyle, statusText;
+
+    if (status === "Paid") {
+      statusStyle = styles.statusPaid;
+      statusText = "Paid";
+    } else if (status === "Unpaid") {
+      statusStyle = styles.statusUnpaid;
+      statusText = "Unpaid";
+    } else {
+      statusStyle = styles.statusPending;
+      statusText = "Pending";
     }
+
+    return <Text style={[styles.status, statusStyle]}>{statusText}</Text>;
   };
 
-  useEffect(() => {
-    fetchInvoices();
-  }, [token, user?.id, role]);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchInvoices();
+  const handleAddInvoice = () => {
+    // Logic to handle adding a new invoice (e.g., form submission)
+    console.log("Invoice added:", formData);
+    setModalVisible(false);
   };
-
-  // Vérification du rôle pour l'affichage conditionnel
-  if (!role) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <ActivityIndicator size="large" />
-        <Text>Loading user information...</Text>
-      </SafeAreaView>
-    );
-  }
-
-  const renderInvoiceItem = ({ item }) => (
-    <View style={styles.invoiceCard}>
-      <Text style={styles.amount}>{item.amount} TND</Text>
-      <Text style={styles.client}>
-        {role === "freelancer" 
-          ? `Client: ${item.client_name}`
-          : `Freelancer: ${item.freelancer_name}`}
-      </Text>
-      <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
-      <Text style={styles.status}>{item.status}</Text>
-    </View>
-  );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      {/* Header */}
+      <StatusBar barStyle="light-content" backgroundColor="#0F2573" />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
-        <Text style={styles.title}>Invoices</Text>
+        <Text style={styles.headerTitle}>My Invoices</Text>
       </View>
 
-      {loading ? (
-        <ActivityIndicator size="large" style={styles.loader} />
-      ) : (
-        <FlatList
-          data={invoices}
-          renderItem={renderInvoiceItem}
-          keyExtractor={item => item.id.toString()}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              colors={["#0F2573"]}
-            />
-          }
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No invoices found</Text>
-          }
-        />
+      {/* Add Invoice Button (Visible uniquement pour les freelances) */}
+      {!isClient && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.addButtonText}>Add Invoice</Text>
+        </TouchableOpacity>
       )}
-    </SafeAreaView>
+
+      {/* Invoice List */}
+      <ScrollView style={styles.scrollView}>
+        {data.map((item) => (
+          <View key={item.id} style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.projectName}>{item.project}</Text>
+              <Text style={styles.amount}>{item.amount}</Text>
+            </View>
+
+            {/* Display Client or Freelancer Name */}
+            <View style={styles.cardRow}>
+              <Text style={styles.label}>
+                {isClient ? "Freelancer:" : "Client:"}
+              </Text>
+              <Text style={styles.value}>
+                {isClient ? item.freelancer : item.client}
+              </Text>
+            </View>
+
+            {/* Status and Deadline */}
+            <View style={styles.cardRow}>
+              <Text style={styles.label}>Status:</Text>
+              {renderStatus(item.status)}
+            </View>
+            <View style={styles.cardRow}>
+              <Text style={styles.label}>Deadline:</Text>
+              <Text style={styles.value}>{item.deadline}</Text>
+            </View>
+
+            <TouchableOpacity style={styles.actionButton}>
+              <Text style={styles.actionText}>View Details</Text>
+              <MaterialIcons name="chevron-right" size={20} color="#4a90e2" />
+            </TouchableOpacity>
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Add Invoice Modal */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Invoice</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="-- Select Project --"
+              value={formData.project}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, project: text }))
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. 200"
+              keyboardType="numeric"
+              value={formData.amount}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, amount: text }))
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Description"
+              value={formData.description}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, description: text }))
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="jj/mm/aaaa"
+              value={formData.deadline}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, deadline: text }))
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Client name"
+              value={formData.clientName}
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, clientName: text }))
+              }
+            />
+            <View style={styles.modalActions}>
+              <Button title="Cancel" onPress={() => setModalVisible(false)} />
+              <Button title="Submit" onPress={handleAddInvoice} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+ container: {
     flex: 1,
-    backgroundColor: "#F8FAFF",
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: "#f5f5f5",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#0F2573",
-    padding: 15,
+    height: 70,
+    paddingHorizontal: 15,
   },
-  title: {
-    color: "white",
+  backButton: {
+    marginRight: 15,
+  },
+  headerTitle: {
     fontSize: 20,
-    marginLeft: 15,
     fontWeight: "bold",
+    color: "white",
   },
-  invoiceCard: {
+  addButton: {
+    backgroundColor: "#007bff",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    margin: 15,
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 15,
+  },
+  card: {
     backgroundColor: "white",
     borderRadius: 10,
-    padding: 15,
-    margin: 10,
-    elevation: 3,
+    padding: 16,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  projectName: {
+    fontSize: 16,
+    fontWeight: "600",
+    flex: 1,
+    marginRight: 10,
+    color: "#333",
   },
   amount: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#0F2573",
+    color: "#4a90e2",
   },
-  client: {
+  cardRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+    alignItems: "center",
+  },
+  label: {
     fontSize: 14,
-    color: "#666",
-    marginVertical: 5,
+    color: "#777",
+    width: 100,
   },
-  date: {
-    fontSize: 12,
-    color: "#999",
+  value: {
+    fontSize: 14,
+    color: "#333",
+    flex: 1,
   },
   status: {
     fontSize: 14,
-    color: "#4CAF50",
-    marginTop: 10,
+    fontWeight: "600",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: "hidden",
   },
-  loader: {
+  statusPaid: {
+    backgroundColor: "#e6f7ee",
+    color: "#28a745",
+  },
+  statusUnpaid: {
+    backgroundColor: "#feeae9",
+    color: "#dc3545",
+  },
+  statusPending: {
+    backgroundColor: "#fff3cd",
+    color: "#ffc107",
+  },
+  actionButton: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: 12,
+  },
+  actionText: {
+    color: "#4a90e2",
+    fontWeight: "600",
+    marginRight: 4,
+  },
+  modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
-  emptyText: {
-    textAlign: "center",
-    marginTop: 20,
-    color: "#666",
+  modalContent: {
+    width: "90%",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 15,
   },
 });
+
 
 export default Invoices;

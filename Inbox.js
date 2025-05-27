@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   StatusBar,
   ActivityIndicator,
-  Image,
+  Platform,
   ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,34 +23,24 @@ const Inbox = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Mock data - replace with your API calls
   useEffect(() => {
-    // Simulate API call
     setTimeout(() => {
       setConversations([
         {
           id: 1,
-          name: 'John Doe',
+          name: 'Asma Loussaif',
           lastMessage: 'Hey, how are you doing?',
           lastTime: '10:30 AM',
           unread: true,
-          avatar: 'JD'
+          avatar: 'AS'
         },
         {
           id: 2,
-          name: 'Jane Smith',
+          name: 'Haythem Mansouri',
           lastMessage: 'About the project deadline...',
           lastTime: 'Yesterday',
           unread: false,
-          avatar: 'JS'
-        },
-        {
-          id: 3,
-          name: 'Mike Johnson',
-          lastMessage: 'The documents are ready',
-          lastTime: 'Monday',
-          unread: false,
-          avatar: 'MJ'
+          avatar: 'HM'
         },
       ]);
       setLoading(false);
@@ -59,7 +49,6 @@ const Inbox = () => {
 
   const selectConversation = (conversation) => {
     setSelectedConversation(conversation);
-    // Simulate loading messages
     setMessages([
       {
         id: 1,
@@ -90,14 +79,12 @@ const Inbox = () => {
 
   const sendMessage = () => {
     if (newMessage.trim() === '') return;
-    
     const newMsg = {
       id: messages.length + 1,
       text: newMessage,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       sender: 'me'
     };
-    
     setMessages([...messages, newMsg]);
     setNewMessage('');
   };
@@ -154,12 +141,10 @@ const Inbox = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
       
       {selectedConversation ? (
-        // Chat View
         <View style={styles.chatContainer}>
-          {/* Chat Header */}
           <View style={styles.chatHeader}>
             <TouchableOpacity onPress={() => setSelectedConversation(null)}>
               <Ionicons name="arrow-back" size={24} color="white" />
@@ -173,10 +158,7 @@ const Inbox = () => {
                 <Text style={styles.chatUserStatus}>Online</Text>
               </View>
             </View>
-            <View style={{ width: 24 }} /> {/* For balance */}
           </View>
-
-          {/* Messages */}
           <FlatList
             data={messages}
             renderItem={renderMessage}
@@ -184,12 +166,7 @@ const Inbox = () => {
             contentContainerStyle={styles.messagesList}
             inverted
           />
-
-          {/* Message Input */}
           <View style={styles.inputContainer}>
-            <TouchableOpacity style={styles.attachmentButton}>
-              <Ionicons name="attach" size={24} color="#5e548e" />
-            </TouchableOpacity>
             <TextInput
               style={styles.messageInput}
               placeholder="Type a message..."
@@ -199,25 +176,21 @@ const Inbox = () => {
               placeholderTextColor="#999"
             />
             <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-              <Ionicons name="send" size={24} color="#5e548e" />
+              <Ionicons name="send" size={24} color="#4682B4" />
             </TouchableOpacity>
           </View>
         </View>
       ) : (
-        // Conversations List
         <View style={styles.container}>
-          {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Messages</Text>
-            <TouchableOpacity style={styles.newChatButton}>
-              <Ionicons name="add" size={24} color="#5e548e" />
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color="#4682B4" />
             </TouchableOpacity>
+            <Text style={styles.headerTitle}>Messages</Text>
           </View>
-
-          {/* Conversations List */}
           {loading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#5e548e" />
+              <ActivityIndicator size="large" color="#4682B4" />
             </View>
           ) : (
             <FlatList
@@ -236,47 +209,62 @@ const Inbox = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#0F2573',
+    backgroundColor: '#F0F8FF',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F0F8FF',
   },
+    inputContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  padding: 8,
+  backgroundColor: '#F0F8FF',
+  borderTopWidth: 1,
+  borderTopColor: '#D1E6FF',
+  position: 'absolute', // Permet de déplacer manuellement
+  bottom: Platform.OS === 'ios' ? 16 : 8, // Ajustement pour éviter d'être trop bas
+  left: 0,
+  right: 0,
+},
+
   header: {
     backgroundColor: '#0F2573',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     width: '100%',
   },
   headerTitle: {
     color: 'white',
     fontSize: 20,
     fontWeight: 'bold',
+    marginLeft: 12,
   },
   newChatButton: {
     padding: 4,
   },
   conversationList: {
     paddingBottom: 16,
-  backgroundColor: '#fff',
+    backgroundColor: '#F0F8FF',
   },
   conversationItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f2f5',
+    borderBottomColor: '#5A99D3',
   },
   selectedConversation: {
-    backgroundColor: '#f5f7fb',
+    backgroundColor: '#D6E8FF',
   },
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#5e548e',
+    backgroundColor: '#0F2573',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -297,18 +285,19 @@ const styles = StyleSheet.create({
   conversationName: {
     fontSize: 16,
     fontWeight: '600',
+    color: '#1A4D8F',
   },
   conversationTime: {
     fontSize: 12,
-    color: '#666',
+    color: '#4B74A6',
   },
   lastMessage: {
     fontSize: 14,
-    color: '#666',
+    color: '#4B74A6',
   },
   unreadMessage: {
     fontWeight: 'bold',
-    color: '#000',
+    color: '#1A4D8F',
   },
   loadingContainer: {
     flex: 1,
@@ -316,16 +305,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   chatContainer: {
-    flex: 1,
-    backgroundColor: '#f5f7fb',
-  },
+  flex: 1,
+  backgroundColor: '#F0F8FF',
+  paddingBottom: 0, // Réduire les marges pour ne pas pousser le champ
+},
   chatHeader: {
     backgroundColor: '#0F2573',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 12,
-    width: '100%',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 12,
   },
   chatUserInfo: {
     flexDirection: 'row',
@@ -337,7 +326,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#5e548e',
+    backgroundColor: '#4B74A6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -353,7 +342,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   chatUserStatus: {
-    color: '#ccc',
+    color: '#D1DFF4',
     fontSize: 12,
   },
   messagesList: {
@@ -376,11 +365,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   sentBubble: {
-    backgroundColor: '#5e548e',
+    backgroundColor: '#5A99D3',
     borderBottomRightRadius: 0,
   },
   receivedBubble: {
-    backgroundColor: 'white',
+    backgroundColor: '#E3F2FF',
     borderBottomLeftRadius: 0,
   },
   sentText: {
@@ -393,7 +382,7 @@ const styles = StyleSheet.create({
   },
   messageTime: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.7)',
+    color: '#BFD4EB',
     marginTop: 4,
     textAlign: 'right',
   },
@@ -401,13 +390,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
-    backgroundColor: 'white',
+    backgroundColor: '#F0F8FF',
     borderTopWidth: 1,
-    borderTopColor: '#e1e4e8',
+    borderTopColor: '#D1E6FF',
+    marginBottom: Platform.OS === 'ios' ? 0 : 8,
   },
   messageInput: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#D1E6FF',
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -421,5 +411,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
 });
+
+
 
 export default Inbox;

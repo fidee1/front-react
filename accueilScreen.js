@@ -22,7 +22,6 @@ import Constants from "expo-constants";
 import { Dimensions } from "react-native";
 import { Platform, StatusBar } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const screenHeight = Dimensions.get("window").height;
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 10 : 10;
 function SidebarNav() {
