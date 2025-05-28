@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { get_available_projects } from "./services/project";
+import { apply_application } from "./services/application";
 import { useSelector } from "react-redux";
 
 const ListOfOffers = ({ navigation }) => {
@@ -46,10 +47,16 @@ const ListOfOffers = ({ navigation }) => {
     setModalVisible(true);
   };
 
-  const handleSendMotivation = () => {
-    console.log("Motivation for project", selectedProjectId, ":", motivation);
-    setModalVisible(false);
+  const handleSendMotivation = async () => {
+    //console.log("Motivation for project", selectedProjectId, ":", motivation);
+    const res = await apply_application({
+      project_id: selectedProjectId,
+      motivation: motivation,
+    });
+    console.log("res apply application", res);
     setMotivation("");
+    window.location.reload();
+    setModalVisible(false);
   };
 
   const renderProjectCard = (project) => (
@@ -177,7 +184,9 @@ const ListOfOffers = ({ navigation }) => {
           </View>
         </View>
 
-        <View style={styles.listContainer}>{projects.map(renderProjectCard)}</View>
+        <View style={styles.listContainer}>
+          {projects.map(renderProjectCard)}
+        </View>
         <Text style={styles.footer}>© 2025</Text>
       </ScrollView>
 
@@ -367,42 +376,42 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   sortButtonsContainer: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginVertical: 10,
-  paddingVertical: 10,
-  backgroundColor: "#ffffff",
-  borderRadius: 8,
-  paddingHorizontal: 15,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.1,
-  shadowRadius: 4,
-  elevation: 2, // Pour Android
-},
-sortButton: {
-  flex: 1,
-  paddingVertical: 10,
-  paddingHorizontal: 10,
-  borderWidth: 1,
-  borderColor: "#ced4da",
-  borderRadius: 5,
-  alignItems: "center",
-  marginHorizontal: 5,
-  backgroundColor: "#f8f9fa",
-},
-activeSortButton: {
-  backgroundColor: "#007bff",
-  borderColor: "#0056b3",
-},
-sortButtonText: {
-  fontSize: 14,
-  color: "#333",
-},
-activeSortButtonText: {
-  color: "#ffffff",
-  fontWeight: "600",
-},
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 10,
+    paddingVertical: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2, // Pour Android
+  },
+  sortButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#ced4da",
+    borderRadius: 5,
+    alignItems: "center",
+    marginHorizontal: 5,
+    backgroundColor: "#f8f9fa",
+  },
+  activeSortButton: {
+    backgroundColor: "#007bff",
+    borderColor: "#0056b3",
+  },
+  sortButtonText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  activeSortButtonText: {
+    color: "#ffffff",
+    fontWeight: "600",
+  },
 });
 
 export default ListOfOffers;

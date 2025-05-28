@@ -26,3 +26,12 @@ export const get_available_projects = async () => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
+export const get_projects_with_proposals = async () => {
+  try {
+    const response = await apiClient.get("/projects-with-proposals");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};

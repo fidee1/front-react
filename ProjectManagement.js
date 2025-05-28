@@ -96,9 +96,9 @@ const ProjectManagement = ({ navigation }) => {
     switch (status) {
       case "pending":
         return styles.statusPending;
-      case "in_progress":
+      case "open":
         return styles.statusInProgress;
-      case "finished":
+      case "done":
         return styles.statusFinished;
       default:
         return styles.statusDefault;
@@ -119,11 +119,11 @@ const ProjectManagement = ({ navigation }) => {
 
       <View style={styles.projectDetails}>
         <Text style={styles.projectBudget}>{item.budget} DT</Text>
-        <View style={[styles.statusBadge, getStatusStyle(item.status)]}>
+        <View style={[styles.statusBadge, getStatusStyle(item.statut)]}>
           <Text style={styles.statusText}>
-            {item.status === "in_progress"
+            {item.statut == "open"
               ? "In Progress"
-              : item.status === "finished"
+              : item.statut == "done"
               ? "Finished"
               : "Pending"}
           </Text>
@@ -146,7 +146,7 @@ const ProjectManagement = ({ navigation }) => {
           <Text style={styles.buttonText}>Delete</Text>
         </TouchableOpacity>
 
-        {item.status === "finished" && (
+        {item.status === "done" && (
           <TouchableOpacity
             style={[styles.actionButton, styles.rateButton]}
             onPress={() => openRatingModal(item)}
