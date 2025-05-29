@@ -35,3 +35,12 @@ export const get_projects_with_proposals = async () => {
     throw error.response ? error.response.data : error.message;
   }
 };
+
+export const get_projects_freelancer = async () => {
+  try {
+    const response = await apiClient.get("/projects-freelancer");
+    return response.data;
+  } catch (error) {
+    throw error.response ? error.response.data : error.message;
+  }
+};

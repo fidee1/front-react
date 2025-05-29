@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,12 @@ import {
   Button,
 } from "react-native";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
+import { add_invoice, get_invoices } from "./services/invoice";
+import { get_projects_freelancer } from "./services/project";
+import { get_clients } from "./services/client";
 
 const Invoices = () => {
   const userRole = useSelector((state) => state.auth.role);
@@ -20,35 +24,17 @@ const Invoices = () => {
   const token = useSelector((state) => state.auth.token);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-
-  const [data, setData] = useState([
-    {
-      id: 1,
-      project: "Développement d'un chatbot pour service client",
-      client: "boubaker eya",
-      freelancer: "loussafl Asma",
-      amount: "1500 TD",
-      status: "Paid",
-      deadline: "17 mai 2025",
-    },
-    {
-      id: 2,
-      project: "Site vitrine entreprise",
-      client: "boubaker eya",
-      freelancer: "boubaker eye",
-      amount: "900 TD",
-      status: "Unpaid",
-      deadline: "1 avr. 2025",
-    },
-  ]);
+  const [projects, setProjects] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [data, setData] = useState([]);
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [formData, setFormData] = useState({
-    project: "",
-    amount: "",
+    project_id: "",
+    montant: "",
     description: "",
-    deadline: "",
-    clientName: "",
+    date_limite: "",
+    client_id: "",
   });
 
   const isClient = userRole === "client";
@@ -70,9 +56,46 @@ const Invoices = () => {
     return <Text style={[styles.status, statusStyle]}>{statusText}</Text>;
   };
 
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const res = await get_invoices();
+        console.log("res", res);
+        setData(res);
+      } catch (error) {
+        console.error("Error fetching invoices:", error);
+      }
+    };
+
+    const fetchClients = async () => {
+      try {
+        const res = await get_clients();
+        setClients(res);
+      } catch (error) {
+        console.error("Error fetching clients:", error);
+      }
+    };
+
+    const fetchProjects = async () => {
+      try {
+        const res = await get_projects_freelancer();
+        setProjects(res);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
+    };
+
+    fetchProjects();
+    fetchClients();
+    fetchInvoices();
+  }, []);
+
   const handleAddInvoice = () => {
     // Logic to handle adding a new invoice (e.g., form submission)
     console.log("Invoice added:", formData);
+
+    const res = add_invoice(formData);
+    console.log("res add invoice", res);
     setModalVisible(false);
   };
 
@@ -90,23 +113,13 @@ const Invoices = () => {
         <Text style={styles.headerTitle}>My Invoices</Text>
       </View>
 
-      {/* Add Invoice Button (Visible uniquement pour les freelances) */}
-      {!isClient && (
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.addButtonText}>Add Invoice</Text>
-        </TouchableOpacity>
-      )}
-
       {/* Invoice List */}
       <ScrollView style={styles.scrollView}>
         {data.map((item) => (
           <View key={item.id} style={styles.card}>
             <View style={styles.cardHeader}>
-              <Text style={styles.projectName}>{item.project}</Text>
-              <Text style={styles.amount}>{item.amount}</Text>
+              <Text style={styles.projectName}>{item.project.titre}</Text>
+              <Text style={styles.amount}>{item.montant}</Text>
             </View>
 
             {/* Display Client or Freelancer Name */}
@@ -115,18 +128,18 @@ const Invoices = () => {
                 {isClient ? "Freelancer:" : "Client:"}
               </Text>
               <Text style={styles.value}>
-                {isClient ? item.freelancer : item.client}
+                {isClient ? item.freelancer.name : item.client.name}
               </Text>
             </View>
 
             {/* Status and Deadline */}
             <View style={styles.cardRow}>
               <Text style={styles.label}>Status:</Text>
-              {renderStatus(item.status)}
+              {renderStatus(item.statut)}
             </View>
             <View style={styles.cardRow}>
               <Text style={styles.label}>Deadline:</Text>
-              <Text style={styles.value}>{item.deadline}</Text>
+              <Text style={styles.value}>{item.date_limite}</Text>
             </View>
 
             <TouchableOpacity style={styles.actionButton}>
@@ -136,6 +149,16 @@ const Invoices = () => {
           </View>
         ))}
       </ScrollView>
+
+      {/* Add Invoice Button (Visible uniquement pour les freelances) */}
+      {!isClient && (
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setModalVisible(true)}
+        >
+          <Text style={styles.addButtonText}>Add Invoice</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Add Invoice Modal */}
       <Modal
@@ -147,21 +170,31 @@ const Invoices = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Add Invoice</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="-- Select Project --"
-              value={formData.project}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, project: text }))
+            {/* Project Picker */}
+            <Text style={styles.label}>Select Project:</Text>
+            <Picker
+              selectedValue={formData.project_id}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, project_id: value }))
               }
-            />
+              style={styles.picker}
+            >
+              <Picker.Item label="-- Select Project --" value="" />
+              {projects.map((project) => (
+                <Picker.Item
+                  key={project.id}
+                  label={project.titre}
+                  value={project.id}
+                />
+              ))}
+            </Picker>
             <TextInput
               style={styles.input}
               placeholder="e.g. 200"
               keyboardType="numeric"
-              value={formData.amount}
+              value={formData.montant}
               onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, amount: text }))
+                setFormData((prev) => ({ ...prev, montant: text }))
               }
             />
             <TextInput
@@ -175,19 +208,29 @@ const Invoices = () => {
             <TextInput
               style={styles.input}
               placeholder="jj/mm/aaaa"
-              value={formData.deadline}
+              value={formData.date_limite}
               onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, deadline: text }))
+                setFormData((prev) => ({ ...prev, date_limite: text }))
               }
             />
-            <TextInput
-              style={styles.input}
-              placeholder="Client name"
-              value={formData.clientName}
-              onChangeText={(text) =>
-                setFormData((prev) => ({ ...prev, clientName: text }))
+            {/* Client Picker */}
+            <Text style={styles.label}>Select Client:</Text>
+            <Picker
+              selectedValue={formData.client_id}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, client_id: value }))
               }
-            />
+              style={styles.picker}
+            >
+              <Picker.Item label="-- Select Client --" value="" />
+              {clients.map((client) => (
+                <Picker.Item
+                  key={client.id}
+                  label={client.name}
+                  value={client.id}
+                />
+              ))}
+            </Picker>
             <View style={styles.modalActions}>
               <Button title="Cancel" onPress={() => setModalVisible(false)} />
               <Button title="Submit" onPress={handleAddInvoice} />
@@ -200,7 +243,7 @@ const Invoices = () => {
 };
 
 const styles = StyleSheet.create({
- container: {
+  container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
   },
@@ -259,7 +302,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     color: "#333",
   },
-  amount: {
+  montant: {
     fontSize: 16,
     fontWeight: "bold",
     color: "#4a90e2",
@@ -346,6 +389,5 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
 });
-
 
 export default Invoices;

@@ -33,7 +33,7 @@ const Profile = () => {
 
   const [editedProfile, setEditedProfile] = useState({
     titre: user.titre || "",
-    tarif: user.profile.yarif || "",
+    tarif: user.profile?.tarif,
     note: user.note || 0,
     experience: user.experience || "",
     portfolio: user.portfolio || "",
@@ -49,11 +49,11 @@ const Profile = () => {
           setTimeout(() => {
             setProfile(parsedUser);
             setEditedProfile({
-              titre: parsedUser.profile.titre || "",
-              tarif: parsedUser.profile.tarif || "",
-              note: parsedUser.profile.note || 0,
-              experience: parsedUser.profile.experience || "",
-              portfolio: parsedUser.profile.portfolio || "",
+              titre: parsedUser.profile?.titre || "",
+              tarif: parsedUser.profile?.tarif || "",
+              note: parsedUser.profile?.note || 0,
+              experience: parsedUser.profile?.experience || "",
+              portfolio: parsedUser.profile?.portfolio || "",
             });
             setSkillsInput(parsedUser.profile?.competences || "");
           }, 1000);

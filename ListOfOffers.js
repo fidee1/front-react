@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { get_available_projects } from "./services/project";
 import { apply_application } from "./services/application";
 import { useSelector } from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const ListOfOffers = ({ navigation }) => {
   const userConnected = useSelector((state) => state.auth?.user) || {};
@@ -54,9 +55,33 @@ const ListOfOffers = ({ navigation }) => {
       motivation: motivation,
     });
     console.log("res apply application", res);
+    await AsyncStorage.setItem("user", JSON.stringify(res.user));
+
+    console.log("userConnected", userConnected);
+    // setUser(res.user);
+    userConnected = res.user;
+    // Refresh data
+    await refreshData();
+
     setMotivation("");
     window.location.reload();
     setModalVisible(false);
+  };
+
+  const refreshData = async () => {
+    try {
+      const updatedUser = await AsyncStorage.getItem("user");
+      if (updatedUser) {
+        userConnected = JSON.parse(updatedUser);
+        //   setUser(parsedUser); // Update the local user state
+      }
+
+      // Refresh project list
+      const res = await get_available_projects();
+      setProjects(res);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
   };
 
   const renderProjectCard = (project) => (
@@ -95,7 +120,9 @@ const ListOfOffers = ({ navigation }) => {
         onPress={() => handleApplyProject(project.id)}
       >
         <Text style={styles.actionButtonText}>
-          {userConnected.applications.some((app) => app.id == project.id)
+          {userConnected.applications.some(
+            (app) => app.project_id == project.id
+          )
             ? "Already Applied"
             : "Apply"}
         </Text>
