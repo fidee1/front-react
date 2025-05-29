@@ -98,6 +98,7 @@ const ProfilClient = ({ route }) => {
       isFreelancer: true,
     });
   };
+  
 
   const renderStars = (rating, editable = false) => {
     return Array(5)

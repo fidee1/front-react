@@ -10,8 +10,9 @@ import {
   Alert,
   SafeAreaView,
   StatusBar,
+  toLowerCase,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons"; // Ajout de MaterialIcons
 import { getFreelancers } from "./api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
@@ -38,11 +39,11 @@ const Freelancers = () => {
         setFreelancers(res);
         setFilteredFreelancers(res);
         setLoading(false);
-        return; // Arrêter l'exécution ici pour ne pas appeler l'API
+        return; 
       } catch (err) {
         console.error("Erreur lors du chargement des freelancers:", err);
 
-        // Gestion spécifique des erreurs d'authentification
+        
         if (
           err.message === "Unauthenticated." ||
           err.response?.status === 401
@@ -52,7 +53,7 @@ const Freelancers = () => {
             "Session expirée",
             "Votre session a expiré. Veuillez vous reconnecter."
           );
-          // Suppression du token invalide
+          
           AsyncStorage.removeItem("accessToken");
         } else {
           setError(
@@ -73,54 +74,62 @@ const Freelancers = () => {
     loadFreelancers();
   }, []);
 
-  // Fonction pour filtrer les freelancers
+  
   const applyFilters = () => {
-    let filtered = [...freelancers];
+  let filtered = [...freelancers];
 
-    // Filtrer par compétences (sur le titre pour cette version simplifiée)
-    if (skillFilter) {
-      filtered = filtered.filter((freelancer) =>
-        freelancer.titre.toLowerCase().includes(skillFilter.toLowerCase())
-      );
-    }
+  if (skillFilter) {
+    filtered = filtered.filter((freelancer) => {
+      const competences = freelancer.profile?.competences || '';
+      return competences.toLowerCase().includes(skillFilter.toLowerCase());
+    });
+  }
+  
+  if (minRate) {
+    filtered = filtered.filter(
+      (freelancer) => freelancer.profile?.rating >= parseInt(minRate || 0)
+    );
+  }
+  
+  if (maxRate) {
+    filtered = filtered.filter(
+      (freelancer) => freelancer.profile?.rating <= parseInt(maxRate || Infinity)
+    );
+  }
 
-    // Filtrer par tarif minimum
-    if (minRate) {
-      filtered = filtered.filter(
-        (freelancer) => freelancer.rating >= parseInt(minRate)
-      );
-    }
-
-    // Filtrer par tarif maximum
-    if (maxRate) {
-      filtered = filtered.filter(
-        (freelancer) => freelancer.rating <= parseInt(maxRate)
-      );
-    }
-
-    setFilteredFreelancers(filtered);
-  };
-
-  // Réinitialiser les filtres
+  setFilteredFreelancers(filtered);
+};
   const clearFilters = () => {
     setSkillFilter("");
     setMinRate("");
     setMaxRate("");
     setFilteredFreelancers(freelancers);
   };
-
-  // Rendu d'un élément de la liste - Version simplifiée
   const renderFreelancerItem = ({ item }) => (
-    <View style={styles.freelancerCard}>
-      <Text style={styles.freelancerName}>
-        {item.name} {item.lastName}
-      </Text>
-      <Text style={styles.titleText}>{item.profile.titre}</Text>
-      <Text style={styles.rateText}>{item.profile.rating} TND/h</Text>
+  <View style={styles.freelancerCard}>
+    <Text style={styles.freelancerName}>
+      {item.name} {item.lastName}
+    </Text>
+    <Text style={styles.titleText}>{item.profile?.titre}</Text>
+    <Text style={styles.competencesText}>{item.profile?.competences} </Text>
+    <Text style={styles.rateText}>{item.profile?.tarif} TND/h</Text>
+    
+    <View style={styles.actionsContainer}>
+      <TouchableOpacity 
+        style={[styles.actionButton, styles.chatButton]}
+        onPress={() => navigation.navigate('Inbox', { freelancerId: item.id })}>
+        <MaterialIcons name="chat" size={20} color="white" />
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={[styles.actionButton, styles.profileButton]}
+        onPress={() => navigation.navigate('Profile', { freelancerId: item.id })}>
+        <MaterialIcons name="person" size={20} color="white" />
+      </TouchableOpacity>
     </View>
-  );
+  </View>
+);
 
-  // Affichage d'une erreur
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -175,23 +184,7 @@ const Freelancers = () => {
               onChangeText={setSkillFilter}
             />
 
-            <View style={styles.rateFilterContainer}>
-              <TextInput
-                style={[styles.input, styles.rateInput]}
-                placeholder="Min rate (TND)" // Translated
-                value={minRate}
-                onChangeText={setMinRate}
-                keyboardType="numeric"
-              />
-
-              <TextInput
-                style={[styles.input, styles.rateInput]}
-                placeholder="Max rate (TND)" // Translated
-                value={maxRate}
-                onChangeText={setMaxRate}
-                keyboardType="numeric"
-              />
-            </View>
+          
 
             <View style={styles.buttonGroup}>
               <TouchableOpacity
@@ -370,6 +363,30 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#5E548E",
     marginBottom: 8,
+  },
+  competencesText: {
+    fontSize: 15,
+    color: "#5E548E",
+    marginBottom: 8,
+  },
+  actionsContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
+    marginTop: 10,
+  },
+  actionButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  chatButton: {
+    backgroundColor: "#0F2573",
+  },
+  profileButton: {
+    backgroundColor: "#266CA9",
   },
   ratingContainer: {
     flexDirection: "row",

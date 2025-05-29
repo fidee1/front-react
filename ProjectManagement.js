@@ -14,7 +14,7 @@ import {
   StatusBar,
 } from "react-native";
 import { MaterialIcons, Ionicons, AntDesign } from "@expo/vector-icons";
-import { useSelector } from "react-redux"; // Pour accéder au state Redux
+import { useSelector } from "react-redux";
 import { get_projects_client } from "./services/project";
 
 const ProjectManagement = ({ navigation }) => {
@@ -24,9 +24,10 @@ const ProjectManagement = ({ navigation }) => {
   const [tempRating, setTempRating] = useState(0);
   const [selectedProject, setSelectedProject] = useState(null);
   const [projects, setProjects] = useState([]);
+  const [assignmentModalVisible, setAssignmentModalVisible] = useState(false);
+  const [assignedFreelancer, setAssignedFreelancer] = useState("");
 
-  // Récupérer le rôle de l'utilisateur depuis le state Redux
-  const userRole = useSelector((state) => state.auth?.role) || "client"; // Par défaut 'client' pour le test
+  const userRole = useSelector((state) => state.auth?.role) || "client";
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -105,9 +106,15 @@ const ProjectManagement = ({ navigation }) => {
     }
   };
 
-  // Fonction pour naviguer vers la page de création de projet
   const navigateToAddProject = () => {
     navigation.navigate("AddProject");
+  };
+
+  const handleViewClick = (project) => {
+    if (project.statut === "open") {
+      setAssignedFreelancer(project.freelancer || "Unassigned");
+      setAssignmentModalVisible(true);
+    }
   };
 
   const renderProjectItem = ({ item }) => (
@@ -130,12 +137,10 @@ const ProjectManagement = ({ navigation }) => {
         </View>
       </View>
 
-      {/*   {item.status !== "pending" && (
-        <Text style={styles.freelancerText}>Freelancer: {item.freelancer}</Text>
-      )} */}
-
       <View style={styles.actionsContainer}>
-        <TouchableOpacity style={[styles.actionButton, styles.viewButton]}>
+        <TouchableOpacity 
+          style={[styles.actionButton, styles.viewButton]}
+          onPress={() => handleViewClick(item)}>
           <Text style={styles.buttonText}>View</Text>
         </TouchableOpacity>
 
@@ -159,6 +164,7 @@ const ProjectManagement = ({ navigation }) => {
       </View>
     </View>
   );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
@@ -197,7 +203,6 @@ const ProjectManagement = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Bouton Add Project - visible uniquement pour les clients */}
         {userRole === "client" && (
           <TouchableOpacity
             style={styles.addButton}
@@ -228,7 +233,7 @@ const ProjectManagement = ({ navigation }) => {
           animationType="slide"
           transparent={true}
           visible={ratingModalVisible}
-          onRequestClose={() => setRatingModalVisible(false)}
+          onRequestClose={() => setRatingModalVisible(false)} 
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
@@ -277,6 +282,41 @@ const ProjectManagement = ({ navigation }) => {
                     style={[styles.modalButtonText, styles.submitButtonText]}
                   >
                     Submit
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Assignment Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={assignmentModalVisible}
+          onRequestClose={() => setAssignmentModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Project Assignment</Text>
+              </View>
+
+              <View style={styles.modalBody}>
+                <Text style={styles.ratingText}>
+                  This project is assigned to {assignedFreelancer}
+                </Text>
+              </View>
+
+              <View style={styles.modalFooter}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.closeButton]}
+                  onPress={() => setAssignmentModalVisible(false)}
+                >
+                  <Text
+                    style={[styles.modalButtonText, styles.closeButtonText]}
+                  >
+                    Close
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -349,7 +389,6 @@ const styles = StyleSheet.create({
     color: "#041D56",
     fontSize: 10,
   },
-  // Style pour le bouton Add Project
   addButton: {
     flexDirection: "row",
     alignItems: "center",

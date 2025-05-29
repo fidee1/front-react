@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
   StyleSheet, 
   ScrollView, 
-  TextInput, 
-  TouchableOpacity,
+  TextInput,
   Alert,
   SafeAreaView,
-  StatusBar
+  StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const palette = {
   LIGHT_BLUE: "#ADE1FB",
@@ -34,76 +35,59 @@ const colors = {
 export default function Claim() {
   const navigation = useNavigation();
   const [form, setForm] = useState({
-    subject: '',
+    sujet: '', // Changé de "subject" à "sujet" pour correspondre au backend
     description: '',
-    user_id: 1, // Replace with authenticated user's ID
+    user_id: 1, // Remplace par l'ID de l'utilisateur authentifié
   });
-  const [claims, setClaims] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchClaims = async () => {
+  const getToken = async () => {
     try {
-      setLoading(true);
-      // Replace with your actual API endpoint
-      const response = await fetch('http://127.0.0.1:8000/api/claims');
-      const data = await response.json();
-      setClaims(data);
+      const token = await AsyncStorage.getItem('userToken');
+      return token || '63|T2DGkn3YxaaoyJf0oB3YKRRfDAybmzCAbmovdHF5c982ab70'; // Utilise un token par défaut si aucun n'est trouvé
     } catch (error) {
-      Alert.alert('Error', 'Failed to load claims');
-      console.error(error);
-    } finally {
-      setLoading(false);
+      console.error('Error retrieving token:', error);
+      return null;
     }
   };
 
   const submitClaim = async () => {
-    if (!form.subject || !form.description) {
+    if (!form.sujet || !form.description) {
       Alert.alert('Error', 'Please fill all fields');
       return;
     }
 
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:8000/api/claims', {
+      const token = await getToken();
+      if (!token) throw new Error('No authentication token available');
+
+      const response = await fetch('http://192.168.215.109:8080/api/reclamations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify(form),
       });
 
-      if (!response.ok) throw new Error('Submission failed');
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Submission failed! Status: ${response.status}, Response: ${text}`);
+      }
 
-      setForm({ ...form, subject: '', description: '' });
-      await fetchClaims();
+      const data = await response.json();
+      console.log('Response data:', data); // Log pour déboguer
+
+      setForm({ ...form, sujet: '', description: '' });
       Alert.alert('Success', 'Claim submitted successfully');
     } catch (error) {
-      Alert.alert('Error', 'Failed to submit claim');
+      Alert.alert('Error', `Failed to submit claim: ${error.message}`);
       console.error(error);
     } finally {
       setLoading(false);
     }
   };
-
-  const deleteClaim = async (id) => {
-    try {
-      setLoading(true);
-      await fetch(`http://127.0.0.1:8000/api/claims/${id}`, {
-        method: 'DELETE',
-      });
-      await fetchClaims();
-      Alert.alert('Success', 'Claim deleted successfully');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to delete claim');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchClaims();
-  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -130,8 +114,8 @@ export default function Claim() {
                 style={styles.input}
                 placeholder="Enter the subject of your claim"
                 placeholderTextColor={palette.LIGHT_BLUE}
-                value={form.subject}
-                onChangeText={(text) => setForm({ ...form, subject: text })}
+                value={form.sujet} // Changé de "subject" à "sujet"
+                onChangeText={(text) => setForm({ ...form, sujet: text })} // Changé ici
               />
 
               <Text style={styles.label}>Description</Text>
@@ -157,36 +141,6 @@ export default function Claim() {
               </Button>
             </Card.Content>
           </Card>
-
-          {/* Claims List */}
-          {claims.length > 0 && (
-            <View style={styles.claimsContainer}>
-              <Text style={styles.sectionTitle}>Your Claim History</Text>
-              
-              {claims.map((claim) => (
-                <Card key={claim.id} style={styles.claimCard}>
-                  <Card.Content>
-                    <View style={styles.claimHeader}>
-                      <Text style={styles.claimSubject}>{claim.subject}</Text>
-                      <Button
-                        mode="text"
-                        onPress={() => deleteClaim(claim.id)}
-                        textColor={palette.LIGHT_BLUE}
-                        style={styles.deleteButton}
-                      >
-                        Delete
-                      </Button>
-                    </View>
-                    
-                    <Text style={styles.claimDescription}>{claim.description}</Text>
-                    <Text style={styles.claimUser}>
-                      👤 {claim.user?.name || 'Unknown User'}
-                    </Text>
-                  </Card.Content>
-                </Card>
-              ))}
-            </View>
-          )}
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -224,7 +178,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderRadius: 12,
     backgroundColor: 'white',
-     marginTop:50,
+    marginTop: 50,
   },
   sectionTitle: {
     fontSize: 18,
@@ -262,40 +216,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: 'white',
-  },
-  claimsContainer: {
-    marginTop: 16,
-  },
-  claimCard: {
-    marginBottom: 12,
-    borderRadius: 8,
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: palette.LIGHT_BLUE,
-  },
-  claimHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  claimSubject: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: palette.DARK_BLUE,
-    flex: 1,
-  },
-  deleteButton: {
-    alignSelf: 'flex-end',
-  },
-  claimDescription: {
-    fontSize: 14,
-    color: palette.MEDIUM_BLUE,
-    marginBottom: 8,
-  },
-  claimUser: {
-    fontSize: 12,
-    color: palette.LIGHT_BLUE,
-    fontStyle: 'italic',
   },
 });

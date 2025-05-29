@@ -35,11 +35,7 @@ function SidebarNav() {
   const [budgetRange, setBudgetRange] = useState("");
   const [projectsCount, setProjectsCount] = useState("");
   const [freelancers, setFreelancers] = useState([
-    { id: 1, name: "John D.", skills: "React, Node", rate: 50 },
-    { id: 2, name: "Sarah M.", skills: "Design, UI/UX", rate: 45 },
-    { id: 3, name: "Alex T.", skills: "Python, Django", rate: 60 },
-    { id: 4, name: "Emma L.", skills: "iOS, Swift", rate: 55 },
-    { id: 5, name: "Mike R.", skills: "Android, Kotlin", rate: 50 },
+   
   ]);
 
   const userRole = useSelector((state) => state.auth.role);
